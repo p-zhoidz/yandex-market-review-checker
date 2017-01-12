@@ -5,7 +5,6 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Objects;
 
 
 /**
@@ -24,7 +23,7 @@ public class TaskDTO implements Serializable {
 
     private String comment;
 
-
+    @NotNull
     private Long posterId;
 
 }

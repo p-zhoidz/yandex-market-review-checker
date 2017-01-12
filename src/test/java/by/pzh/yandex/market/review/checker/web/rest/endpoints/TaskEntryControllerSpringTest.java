@@ -1,6 +1,8 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
+import by.pzh.yandex.market.review.checker.domain.Store;
+import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
@@ -81,8 +83,18 @@ public class TaskEntryControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static TaskEntry createEntity(EntityManager em) {
-        TaskEntry taskEntry = new TaskEntry();
-        return taskEntry;
+        Task task = TestDummyObjectsFactory.getTask();
+        Store store = TestDummyObjectsFactory.getStore();
+
+        em.persist(task.getPoster());
+        em.persist(task);
+        em.persist(store.getOwner());
+        em.persist(store);
+
+        return TaskEntry.builder()
+                .task(task)
+                .store(store)
+                .build();
     }
 
     @Before
@@ -117,6 +129,8 @@ public class TaskEntryControllerSpringTest {
         // Create the TaskEntry with an existing ID
         TaskEntry existingTaskEntry = new TaskEntry();
         existingTaskEntry.setId(1L);
+        existingTaskEntry.setTask(taskEntry.getTask());
+        existingTaskEntry.setStore(taskEntry.getStore());
         TaskEntryDTO existingTaskEntryDTO = taskEntryMapper.taskEntryToTaskEntryDTO(existingTaskEntry);
 
         // An entity with an existing ID cannot be created, so this API call must fail

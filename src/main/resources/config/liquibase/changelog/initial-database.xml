@@ -23,8 +23,9 @@
                 <constraints nullable="false" />
             </column>
 
-            <column name="active" type="bit">
-                <constraints nullable="true" />
+            <column name="active" type="BIT(0)" defaultValueNumeric="0">
+                <constraints nullable="false" />
+
             </column>
 
         </createTable>
@@ -40,8 +41,8 @@
                 <constraints nullable="false" />
             </column>
 
-            <column name="active" type="bit">
-                <constraints nullable="true" />
+            <column name="active" type="BIT(0)" defaultValueNumeric="0">
+                <constraints nullable="false" />
             </column>
 
             <column name="desired_reviews_number" type="integer">
@@ -49,7 +50,7 @@
             </column>
 
             <column name="owner_id" type="bigint">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
         </createTable>
@@ -77,8 +78,8 @@
                 <constraints nullable="false" />
             </column>
 
-            <column name="active" type="bit">
-                <constraints nullable="true" />
+            <column name="active" type="BIT(0)" defaultValueNumeric="0">
+                <constraints nullable="false" />
             </column>
 
         </createTable>
@@ -95,7 +96,7 @@
             </column>
 
             <column name="poster_id" type="bigint">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
         </createTable>
@@ -112,11 +113,11 @@
             </column>
 
             <column name="status" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
             <column name="report_id" type="bigint">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
         </createTable>
@@ -141,7 +142,7 @@
             </column>
 
             <column name="poster_id" type="bigint">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
         </createTable>
@@ -154,11 +155,11 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="store_id" type="bigint">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
             <column name="task_id" type="bigint">
-                <constraints nullable="true" />
+                <constraints nullable="false" />
             </column>
 
         </createTable>

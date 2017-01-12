@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
+import by.pzh.yandex.market.review.checker.domain.Customer;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
@@ -91,7 +92,11 @@ public class StoreControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Store createEntity(EntityManager em) {
+        Customer customer = TestDummyObjectsFactory.getCustomer();
+        em.persist(customer);
+
         Store store = Store.builder()
+                .owner(customer)
                 .storeUrl(DEFAULT_STORE_URL)
                 .active(DEFAULT_ACTIVE)
                 .desiredReviewsNumber(DEFAULT_DESIRED_REVIEWS_NUMBER)

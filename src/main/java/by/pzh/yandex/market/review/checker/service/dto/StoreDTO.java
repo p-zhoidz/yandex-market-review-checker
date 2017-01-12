@@ -23,6 +23,7 @@ public class StoreDTO implements Serializable {
     @NotNull
     private Integer desiredReviewsNumber;
 
+    @NotNull
     private Long ownerId;
 
 }

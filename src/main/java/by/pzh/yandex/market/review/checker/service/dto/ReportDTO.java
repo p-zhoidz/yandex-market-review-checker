@@ -15,5 +15,6 @@ public class ReportDTO implements Serializable {
     private Long id;
     @NotNull
     private LocalDate date;
+    @NotNull
     private Long posterId;
 }

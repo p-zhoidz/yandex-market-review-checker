@@ -15,6 +15,8 @@ public class ReportEntryDTO implements Serializable {
     private Long id;
     @NotNull
     private String text;
+    @NotNull
     private ReportStatus status;
+    @NotNull
     private Long reportId;
 }

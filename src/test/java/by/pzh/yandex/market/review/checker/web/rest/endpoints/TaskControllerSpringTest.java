@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
+import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
@@ -93,7 +94,11 @@ public class TaskControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Task createEntity(EntityManager em) {
+        Poster poster = TestDummyObjectsFactory.getPoster();
+        em.persist(poster);
+
         Task task = Task.builder()
+                .poster(poster)
                 .startDate(DEFAULT_START_DATE)
                 .endDate(DEFAULT_END_DATE)
                 .comment(DEFAULT_COMMENT)
