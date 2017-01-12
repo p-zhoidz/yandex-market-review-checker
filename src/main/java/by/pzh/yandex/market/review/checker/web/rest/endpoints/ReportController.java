@@ -36,7 +36,8 @@ public class ReportController {
      * POST  /reports : Create a new report.
      *
      * @param reportDTO the reportDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new reportDTO, or with status 400 (Bad Request) if the report has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new reportDTO,
+     * or with status 200 (OK) if the report has already an ID and was updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/reports")
@@ -51,7 +52,7 @@ public class ReportController {
      *
      * @param reportDTO the reportDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated reportDTO,
-     * or with status 400 (Bad Request) if the reportDTO is not valid,
+     * or with status 422 (Bad Request) if the reportDTO is not valid,
      * or with status 500 (Internal Server Error) if the reportDTO couldnt be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */

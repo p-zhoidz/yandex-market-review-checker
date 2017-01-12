@@ -22,14 +22,20 @@ public class TaskEntryService {
     private TaskEntryMapper taskEntryMapper;
     private TaskEntryRepository taskEntryRepository;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param taskEntryRepository task entry repository.
+     * @param taskEntryMapper     task entry mapper instance.
+     */
     @Inject
-    public TaskEntryService(TaskEntryMapper taskEntryMapper, TaskEntryRepository taskEntryRepository) {
+    public TaskEntryService(TaskEntryRepository taskEntryRepository, TaskEntryMapper taskEntryMapper) {
         this.taskEntryMapper = taskEntryMapper;
         this.taskEntryRepository = taskEntryRepository;
     }
 
     /**
-     * Save a store.
+     * Create a task entry.
      *
      * @param taskEntryDTO the entity to save
      * @return the persisted entity
@@ -40,7 +46,7 @@ public class TaskEntryService {
     }
 
     /**
-     * Save a store.
+     * Update a task entry.
      *
      * @param taskEntryDTO the entity to save
      * @return the persisted entity

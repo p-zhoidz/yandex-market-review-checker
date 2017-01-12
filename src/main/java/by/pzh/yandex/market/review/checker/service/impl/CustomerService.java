@@ -4,8 +4,6 @@ import by.pzh.yandex.market.review.checker.domain.Customer;
 import by.pzh.yandex.market.review.checker.repository.CustomerRepository;
 import by.pzh.yandex.market.review.checker.service.dto.CustomerDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.CustomerMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +21,12 @@ public class CustomerService {
     private CustomerRepository customerRepository;
     private CustomerMapper customerMapper;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param customerRepository customer repository instance..
+     * @param customerMapper     customer mapper instance.
+     */
     @Inject
     public CustomerService(CustomerRepository customerRepository, CustomerMapper customerMapper) {
         this.customerRepository = customerRepository;
@@ -30,7 +34,7 @@ public class CustomerService {
     }
 
     /**
-     * Save a customer.
+     * Update a customer.
      *
      * @param customerDTO the entity to save
      * @return the persisted entity
@@ -41,7 +45,7 @@ public class CustomerService {
     }
 
     /**
-     * Save a customer.
+     * Create a customer.
      *
      * @param customerDTO the entity to save
      * @return the persisted entity

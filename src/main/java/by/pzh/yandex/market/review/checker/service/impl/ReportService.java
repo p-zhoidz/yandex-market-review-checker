@@ -20,6 +20,12 @@ public class ReportService {
     private ReportRepository reportRepository;
     private ReportMapper reportMapper;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param reportRepository report repository instance.
+     * @param reportMapper     report mapper instance.
+     */
     @Inject
     public ReportService(ReportRepository reportRepository, ReportMapper reportMapper) {
         this.reportRepository = reportRepository;
@@ -27,18 +33,7 @@ public class ReportService {
     }
 
     /**
-     * Save a report.
-     *
-     * @param report the entity to save
-     * @return the persisted entity
-     */
-    private ReportDTO save(Report report) {
-        report = reportRepository.save(report);
-        return reportMapper.reportToReportDTO(report);
-    }
-
-    /**
-     * Save a report.
+     * Create a report.
      *
      * @param reportDTO the entity to save
      * @return the persisted entity
@@ -49,7 +44,7 @@ public class ReportService {
     }
 
     /**
-     * Save a report.
+     * Update a report.
      *
      * @param reportDTO the entity to save
      * @return the persisted entity
@@ -91,5 +86,16 @@ public class ReportService {
      */
     public void delete(Long id) {
         reportRepository.delete(id);
+    }
+
+    /**
+     * Save a report.
+     *
+     * @param report the entity to save
+     * @return the persisted entity
+     */
+    private ReportDTO save(Report report) {
+        report = reportRepository.save(report);
+        return reportMapper.reportToReportDTO(report);
     }
 }

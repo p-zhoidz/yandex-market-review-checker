@@ -21,6 +21,12 @@ public class TaskService {
     private TaskRepository taskRepository;
     private TaskMapper taskMapper;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param taskRepository task repository instance.
+     * @param taskMapper     task mapper instance.
+     */
     @Inject
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
@@ -28,7 +34,7 @@ public class TaskService {
     }
 
     /**
-     * Save a task.
+     * Create a task.
      *
      * @param taskDTO the entity to save
      * @return the persisted entity
@@ -39,7 +45,7 @@ public class TaskService {
     }
 
     /**
-     * Save a task.
+     * Update a task.
      *
      * @param taskDTO the entity to save
      * @return the persisted entity

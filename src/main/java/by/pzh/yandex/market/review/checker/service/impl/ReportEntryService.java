@@ -21,14 +21,20 @@ public class ReportEntryService {
     private ReportEntryMapper reportEntryMapper;
     private ReportEntryRepository reportEntryRepository;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param reportEntryRepository report entry repository.
+     * @param reportEntryMapper     report entry mapper.
+     */
     @Inject
-    public ReportEntryService(ReportEntryMapper reportEntryMapper, ReportEntryRepository reportEntryRepository) {
+    public ReportEntryService(ReportEntryRepository reportEntryRepository, ReportEntryMapper reportEntryMapper) {
         this.reportEntryMapper = reportEntryMapper;
         this.reportEntryRepository = reportEntryRepository;
     }
 
     /**
-     * Save a report entry.
+     * Create a report entry.
      *
      * @param reportEntryDTO the entity to save
      * @return the persisted entity
@@ -39,7 +45,7 @@ public class ReportEntryService {
     }
 
     /**
-     * Save a report entry.
+     * Update a report entry.
      *
      * @param reportEntryDTO the entity to save
      * @return the persisted entity

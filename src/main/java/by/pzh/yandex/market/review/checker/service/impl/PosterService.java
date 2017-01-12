@@ -21,6 +21,12 @@ public class PosterService {
     private PosterRepository posterRepository;
     private PosterMapper posterMapper;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param posterRepository poster repository instance.
+     * @param posterMapper     poster mapper instance.
+     */
     @Inject
     public PosterService(PosterRepository posterRepository, PosterMapper posterMapper) {
         this.posterRepository = posterRepository;
@@ -28,7 +34,7 @@ public class PosterService {
     }
 
     /**
-     * Save a poster.
+     * Update a poster.
      *
      * @param posterDTO the entity to save
      * @return the persisted entity
@@ -39,7 +45,7 @@ public class PosterService {
     }
 
     /**
-     * Save a poster.
+     * Create a poster.
      *
      * @param posterDTO the entity to save
      * @return the persisted entity

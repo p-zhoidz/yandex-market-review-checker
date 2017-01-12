@@ -21,6 +21,12 @@ public class StoreService {
     private StoreRepository storeRepository;
     private StoreMapper storeMapper;
 
+    /**
+     * Parametrized constructor.
+     *
+     * @param storeRepository store repository instance.
+     * @param storeMapper     store mapper instance.
+     */
     @Inject
     public StoreService(StoreRepository storeRepository, StoreMapper storeMapper) {
         this.storeRepository = storeRepository;
@@ -28,7 +34,7 @@ public class StoreService {
     }
 
     /**
-     * Save a store.
+     * Create a store.
      *
      * @param storeDTO the entity to save
      * @return the persisted entity
@@ -39,7 +45,7 @@ public class StoreService {
     }
 
     /**
-     * Save a store.
+     * Update a store.
      *
      * @param storeDTO the entity to save
      * @return the persisted entity

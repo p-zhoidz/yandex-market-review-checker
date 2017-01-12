@@ -34,7 +34,8 @@ public class PosterController {
      * POST  /posters : Create a new poster.
      *
      * @param posterDTO the posterDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new posterDTO, or with status 400 (Bad Request) if the poster has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new posterDTO,
+     * or with status 200 (OK) if the poster has already an ID and was updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/posters")
@@ -49,8 +50,8 @@ public class PosterController {
      *
      * @param posterDTO the posterDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated posterDTO,
-     * or with status 400 (Bad Request) if the posterDTO is not valid,
-     * or with status 500 (Internal Server Error) if the posterDTO couldnt be updated
+     * or with status 422 (Bad Request) if the posterDTO is not valid,
+     * or with status 500 (Internal Server Error) if the posterDTO could not be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/posters")

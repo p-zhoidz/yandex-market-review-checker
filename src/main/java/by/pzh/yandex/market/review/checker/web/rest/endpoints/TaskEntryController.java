@@ -38,7 +38,8 @@ public class TaskEntryController {
      * POST  /task-entries : Create a new taskEntry.
      *
      * @param taskEntryDTO the taskEntryDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new taskEntryDTO, or with status 400 (Bad Request) if the taskEntry has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new taskEntryDTO,
+     * or with status 200 (OK) if the taskEntry has already an ID and was updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/task-entries")
@@ -54,7 +55,7 @@ public class TaskEntryController {
      *
      * @param taskEntryDTO the taskEntryDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated taskEntryDTO,
-     * or with status 400 (Bad Request) if the taskEntryDTO is not valid,
+     * or with status 422 (Bad Request) if the taskEntryDTO is not valid,
      * or with status 500 (Internal Server Error) if the taskEntryDTO couldnt be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */

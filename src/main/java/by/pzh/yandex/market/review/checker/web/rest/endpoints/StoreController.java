@@ -34,7 +34,8 @@ public class StoreController {
      * POST  /stores : Create a new store.
      *
      * @param storeDTO the storeDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new storeDTO, or with status 400 (Bad Request) if the store has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new storeDTO,
+     * or with status 200 (OK) if the store has already an ID and was updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/stores")
@@ -49,7 +50,7 @@ public class StoreController {
      *
      * @param storeDTO the storeDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated storeDTO,
-     * or with status 400 (Bad Request) if the storeDTO is not valid,
+     * or with status 422 (Bad Request) if the storeDTO is not valid,
      * or with status 500 (Internal Server Error) if the storeDTO couldnt be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */

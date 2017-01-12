@@ -34,7 +34,8 @@ public class TaskController {
      * POST  /tasks : Create a new task.
      *
      * @param taskDTO the taskDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new taskDTO, or with status 400 (Bad Request) if the task has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new taskDTO,
+     * or with status 200 (OK) if the task has already an ID and was updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/tasks")
@@ -49,7 +50,7 @@ public class TaskController {
      *
      * @param taskDTO the taskDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated taskDTO,
-     * or with status 400 (Bad Request) if the taskDTO is not valid,
+     * or with status 422 (Bad Request) if the taskDTO is not valid,
      * or with status 500 (Internal Server Error) if the taskDTO couldnt be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
