@@ -2,15 +2,12 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
 import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,11 +25,8 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class TaskEntryController {
 
-    private final Logger log = LoggerFactory.getLogger(TaskEntryController.class);
-
     @Inject
     private TaskEntryService taskEntryService;
-
 
     /**
      * POST  /task-entries : Create a new taskEntry.
@@ -47,26 +41,6 @@ public class TaskEntryController {
             throws URISyntaxException {
         TaskEntryDTO result = taskEntryService.create(taskEntryDTO);
         return ResponseEntity.created(new URI("/api/task-entries/" + result.getId()))
-                .body(result);
-    }
-
-    /**
-     * PUT  /task-entries : Updates an existing taskEntry.
-     *
-     * @param taskEntryDTO the taskEntryDTO to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated taskEntryDTO,
-     * or with status 422 (Bad Request) if the taskEntryDTO is not valid,
-     * or with status 500 (Internal Server Error) if the taskEntryDTO couldnt be updated
-     * @throws URISyntaxException if the Location URI syntax is incorrect
-     */
-    @PutMapping("/task-entries")
-    public ResponseEntity<TaskEntryDTO> updateTaskEntry(@RequestBody TaskEntryDTO taskEntryDTO)
-            throws URISyntaxException {
-        if (taskEntryDTO.getId() == null) {
-            return createTaskEntry(taskEntryDTO);
-        }
-        TaskEntryDTO result = taskEntryService.update(taskEntryDTO);
-        return ResponseEntity.ok()
                 .body(result);
     }
 
@@ -104,7 +78,6 @@ public class TaskEntryController {
      */
     @DeleteMapping("/task-entries/{id}")
     public ResponseEntity<Void> deleteTaskEntry(@PathVariable Long id) {
-        log.debug("REST request to delete TaskEntry : {}", id);
         taskEntryService.delete(id);
         return ResponseEntity.ok().build();
     }

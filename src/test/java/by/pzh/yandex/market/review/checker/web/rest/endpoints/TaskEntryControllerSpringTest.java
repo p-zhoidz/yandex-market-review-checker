@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -163,47 +162,6 @@ public class TaskEntryControllerSpringTest {
         // Get the taskEntry
         restTaskEntryMockMvc.perform(get("/api/task-entries/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Transactional
-    public void updateTaskEntry() throws Exception {
-        // Initialize the database
-        taskEntryRepository.saveAndFlush(taskEntry);
-        int databaseSizeBeforeUpdate = taskEntryRepository.findAll().size();
-
-        // Update the taskEntry
-        TaskEntry updatedTaskEntry = taskEntryRepository.findOne(taskEntry.getId());
-        TaskEntryDTO taskEntryDTO = taskEntryMapper.taskEntryToTaskEntryDTO(updatedTaskEntry);
-
-        restTaskEntryMockMvc.perform(put("/api/task-entries")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(taskEntryDTO)))
-                .andExpect(status().isOk());
-
-        // Validate the TaskEntry in the database
-        List<TaskEntry> taskEntryList = taskEntryRepository.findAll();
-        assertThat(taskEntryList).hasSize(databaseSizeBeforeUpdate);
-        TaskEntry testTaskEntry = taskEntryList.get(taskEntryList.size() - 1);
-    }
-
-    @Test
-    @Transactional
-    public void updateNonExistingTaskEntry() throws Exception {
-        int databaseSizeBeforeUpdate = taskEntryRepository.findAll().size();
-
-        // Create the TaskEntry
-        TaskEntryDTO taskEntryDTO = taskEntryMapper.taskEntryToTaskEntryDTO(taskEntry);
-
-        // If the entity doesn't have an ID, it will be created instead of just being updated
-        restTaskEntryMockMvc.perform(put("/api/task-entries")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(taskEntryDTO)))
-                .andExpect(status().isCreated());
-
-        // Validate the TaskEntry in the database
-        List<TaskEntry> taskEntryList = taskEntryRepository.findAll();
-        assertThat(taskEntryList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test

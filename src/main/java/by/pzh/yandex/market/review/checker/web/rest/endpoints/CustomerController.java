@@ -2,8 +2,6 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.CustomerDTO;
 import by.pzh.yandex.market.review.checker.service.impl.CustomerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +27,6 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class CustomerController {
 
-    private final Logger log = LoggerFactory.getLogger(CustomerController.class);
-
     @Inject
     private CustomerService customerService;
 
@@ -45,8 +41,6 @@ public class CustomerController {
     @PostMapping("/customers")
     public ResponseEntity<CustomerDTO> createCustomer(@Valid @RequestBody CustomerDTO customerDTO)
             throws URISyntaxException {
-        log.debug("REST request to save Customer : {}", customerDTO);
-
         CustomerDTO result = customerService.create(customerDTO);
         return ResponseEntity.created(new URI("/api/customers/" + result.getId()))
                 .body(result);
@@ -62,8 +56,8 @@ public class CustomerController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/customers")
-    public ResponseEntity<CustomerDTO> updateCustomer(@Valid @RequestBody CustomerDTO customerDTO) throws URISyntaxException {
-        log.debug("REST request to update Customer : {}", customerDTO);
+    public ResponseEntity<CustomerDTO> updateCustomer(@Valid @RequestBody CustomerDTO customerDTO)
+            throws URISyntaxException {
         if (customerDTO.getId() == null) {
             return createCustomer(customerDTO);
         }
@@ -79,7 +73,6 @@ public class CustomerController {
      */
     @GetMapping("/customers")
     public List<CustomerDTO> getAllCustomers() {
-        log.debug("REST request to get all Customers");
         return customerService.findAll();
     }
 
@@ -91,7 +84,6 @@ public class CustomerController {
      */
     @GetMapping("/customers/{id}")
     public ResponseEntity<CustomerDTO> getCustomer(@PathVariable Long id) {
-        log.debug("REST request to get Customer : {}", id);
         CustomerDTO customerDTO = customerService.findOne(id);
         return Optional.ofNullable(customerDTO)
                 .map(result -> new ResponseEntity<>(
@@ -108,7 +100,6 @@ public class CustomerController {
      */
     @DeleteMapping("/customers/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-        log.debug("REST request to delete Customer : {}", id);
         customerService.delete(id);
         return ResponseEntity.ok().build();
     }

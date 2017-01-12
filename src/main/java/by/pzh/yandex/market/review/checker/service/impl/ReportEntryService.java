@@ -34,28 +34,6 @@ public class ReportEntryService {
     }
 
     /**
-     * Create a report entry.
-     *
-     * @param reportEntryDTO the entity to save
-     * @return the persisted entity
-     */
-    public ReportEntryDTO create(ReportEntryDTO reportEntryDTO) {
-        ReportEntry reportEntry = reportEntryMapper.reportEntryDTOToNewReportEntry(reportEntryDTO);
-        return save(reportEntry);
-    }
-
-    /**
-     * Update a report entry.
-     *
-     * @param reportEntryDTO the entity to save
-     * @return the persisted entity
-     */
-    public ReportEntryDTO update(ReportEntryDTO reportEntryDTO) {
-        ReportEntry reportEntry = reportEntryMapper.reportEntryDTOToReportEntry(reportEntryDTO);
-        return save(reportEntry);
-    }
-
-    /**
      * Get all the report entries.
      *
      * @return the list of entities
@@ -88,15 +66,5 @@ public class ReportEntryService {
         reportEntryRepository.delete(id);
     }
 
-    /**
-     * Save a report entry.
-     *
-     * @param reportEntry the entity to save
-     * @return the persisted entity
-     */
-    private ReportEntryDTO save(ReportEntry reportEntry) {
-        reportEntryRepository.save(reportEntry);
-        return reportEntryMapper.reportEntryToReportEntryDTO(reportEntry);
-    }
 
 }

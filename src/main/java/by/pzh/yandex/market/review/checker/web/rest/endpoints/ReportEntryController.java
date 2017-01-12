@@ -7,16 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
-import javax.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,42 +23,6 @@ public class ReportEntryController {
 
     @Inject
     private ReportEntryService reportEntryService;
-
-    /**
-     * POST  /report-entries : Create a new reportEntry.
-     *
-     * @param reportEntryDTO the reportEntryDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new reportEntryDTO,
-     * or with status 200 (OK) if the reportEntry has already an ID and was updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect
-     */
-    @PostMapping("/report-entries")
-    public ResponseEntity<ReportEntryDTO> createReportEntry(@Valid @RequestBody ReportEntryDTO reportEntryDTO)
-            throws URISyntaxException {
-        ReportEntryDTO result = reportEntryService.create(reportEntryDTO);
-        return ResponseEntity.created(new URI("/api/report-entries/" + result.getId()))
-                .body(result);
-    }
-
-    /**
-     * PUT  /report-entries : Updates an existing reportEntry.
-     *
-     * @param reportEntryDTO the reportEntryDTO to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated reportEntryDTO,
-     * or with status 422 (Bad Request) if the reportEntryDTO is not valid,
-     * or with status 500 (Internal Server Error) if the reportEntryDTO couldnt be updated
-     * @throws URISyntaxException if the Location URI syntax is incorrect
-     */
-    @PutMapping("/report-entries")
-    public ResponseEntity<ReportEntryDTO> updateReportEntry(@Valid @RequestBody ReportEntryDTO reportEntryDTO)
-            throws URISyntaxException {
-        if (reportEntryDTO.getId() == null) {
-            return createReportEntry(reportEntryDTO);
-        }
-        ReportEntryDTO result = reportEntryService.update(reportEntryDTO);
-        return ResponseEntity.ok()
-                .body(result);
-    }
 
     /**
      * GET  /report-entries : get all the reportEntries.

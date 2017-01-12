@@ -46,17 +46,6 @@ public class TaskEntryService {
     }
 
     /**
-     * Update a task entry.
-     *
-     * @param taskEntryDTO the entity to save
-     * @return the persisted entity
-     */
-    public TaskEntryDTO update(TaskEntryDTO taskEntryDTO) {
-        TaskEntry taskEntry = taskEntryMapper.taskEntryDTOToTaskEntry(taskEntryDTO);
-        return save(taskEntry);
-    }
-
-    /**
      * Get all the stores.
      *
      * @return the list of entities
