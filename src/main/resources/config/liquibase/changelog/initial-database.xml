@@ -15,7 +15,7 @@
     <property name="floatType" value="float" dbms="mysql, oracle, mssql"/>
 
     <changeSet id="201701112349" author="p.zhoidz">
-        <createTable tableName="customer">
+        <createTable tableName="customers">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -32,7 +32,7 @@
     </changeSet>
 
     <changeSet id="201701112350" author="p.zhoidz">
-        <createTable tableName="store">
+        <createTable tableName="stores">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -57,7 +57,7 @@
     </changeSet>
 
     <changeSet id="201701112351" author="p.zhoidz">
-        <createTable tableName="poster">
+        <createTable tableName="posters">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -86,7 +86,7 @@
     </changeSet>
 
     <changeSet id="201701112352" author="p.zhoidz">
-        <createTable tableName="report">
+        <createTable tableName="reports">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -103,7 +103,7 @@
     </changeSet>
 
     <changeSet id="201701112353" author="p.zhoidz">
-        <createTable tableName="report_entry">
+        <createTable tableName="report_entries">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -124,7 +124,7 @@
     </changeSet>
 
     <changeSet id="201701112354" author="p.zhoidz">
-        <createTable tableName="task">
+        <createTable tableName="tasks">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -149,7 +149,7 @@
     </changeSet>
 
     <changeSet id="201701112355" author="p.zhoidz">
-        <createTable tableName="task_entry">
+        <createTable tableName="task_entries">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -168,56 +168,56 @@
     <changeSet id="201701112356" author="p.zhoidz">
 
         <addForeignKeyConstraint baseColumnNames="owner_id"
-                                 baseTableName="store"
+                                 baseTableName="stores"
                                  constraintName="fk_store_owner_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="customer"/>
+                                 referencedTableName="customers"/>
 
     </changeSet>
 
     <changeSet id="201701112357" author="p.zhoidz">
 
         <addForeignKeyConstraint baseColumnNames="poster_id"
-                                 baseTableName="report"
+                                 baseTableName="reports"
                                  constraintName="fk_report_poster_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="poster"/>
+                                 referencedTableName="posters"/>
 
     </changeSet>
 
     <changeSet id="201701112358" author="p.zhoidz">
 
         <addForeignKeyConstraint baseColumnNames="report_id"
-                                 baseTableName="report_entry"
+                                 baseTableName="report_entries"
                                  constraintName="fk_report_entry_report_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="report"/>
+                                 referencedTableName="reports"/>
 
     </changeSet>
 
     <changeSet id="201701112359" author="p.zhoidz">
 
         <addForeignKeyConstraint baseColumnNames="poster_id"
-                                 baseTableName="task"
+                                 baseTableName="tasks"
                                  constraintName="fk_task_poster_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="poster"/>
+                                 referencedTableName="posters"/>
 
     </changeSet>
 
     <changeSet id="201701120001" author="p.zhoidz">
 
         <addForeignKeyConstraint baseColumnNames="store_id"
-                                 baseTableName="task_entry"
+                                 baseTableName="task_entries"
                                  constraintName="fk_task_entry_store_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="store"/>
+                                 referencedTableName="stores"/>
 
         <addForeignKeyConstraint baseColumnNames="task_id"
-                                 baseTableName="task_entry"
+                                 baseTableName="task_entries"
                                  constraintName="fk_task_entry_task_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="task"/>
+                                 referencedTableName="tasks"/>
 
     </changeSet>
 

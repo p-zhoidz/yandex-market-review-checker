@@ -16,7 +16,7 @@ import java.util.Objects;
  * A TaskEntry.
  */
 @Entity
-@Table(name = "task_entry")
+@Table(name = "task_entries")
 @Data
 public class TaskEntry implements Serializable {
 

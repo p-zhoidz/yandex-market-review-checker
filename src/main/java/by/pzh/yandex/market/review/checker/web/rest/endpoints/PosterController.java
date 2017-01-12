@@ -2,8 +2,6 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.PosterDTO;
 import by.pzh.yandex.market.review.checker.service.impl.PosterService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +27,6 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class PosterController {
 
-    private final Logger log = LoggerFactory.getLogger(PosterController.class);
-
     @Inject
     private PosterService posterService;
 
@@ -43,8 +39,7 @@ public class PosterController {
      */
     @PostMapping("/posters")
     public ResponseEntity<PosterDTO> createPoster(@Valid @RequestBody PosterDTO posterDTO) throws URISyntaxException {
-        log.debug("REST request to save Poster : {}", posterDTO);
-        PosterDTO result = posterService.save(posterDTO);
+        PosterDTO result = posterService.create(posterDTO);
         return ResponseEntity.created(new URI("/api/posters/" + result.getId()))
                 .body(result);
     }
@@ -60,11 +55,10 @@ public class PosterController {
      */
     @PutMapping("/posters")
     public ResponseEntity<PosterDTO> updatePoster(@Valid @RequestBody PosterDTO posterDTO) throws URISyntaxException {
-        log.debug("REST request to update Poster : {}", posterDTO);
         if (posterDTO.getId() == null) {
             return createPoster(posterDTO);
         }
-        PosterDTO result = posterService.save(posterDTO);
+        PosterDTO result = posterService.update(posterDTO);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -76,7 +70,6 @@ public class PosterController {
      */
     @GetMapping("/posters")
     public List<PosterDTO> getAllPosters() {
-        log.debug("REST request to get all Posters");
         return posterService.findAll();
     }
 
@@ -88,7 +81,6 @@ public class PosterController {
      */
     @GetMapping("/posters/{id}")
     public ResponseEntity<PosterDTO> getPoster(@PathVariable Long id) {
-        log.debug("REST request to get Poster : {}", id);
         PosterDTO posterDTO = posterService.findOne(id);
         return Optional.ofNullable(posterDTO)
                 .map(result -> new ResponseEntity<>(
@@ -105,7 +97,6 @@ public class PosterController {
      */
     @DeleteMapping("/posters/{id}")
     public ResponseEntity<Void> deletePoster(@PathVariable Long id) {
-        log.debug("REST request to delete Poster : {}", id);
         posterService.delete(id);
         return ResponseEntity.ok().build();
     }

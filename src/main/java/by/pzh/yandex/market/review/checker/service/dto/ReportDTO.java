@@ -5,7 +5,6 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Objects;
 
 
 /**
@@ -13,13 +12,8 @@ import java.util.Objects;
  */
 @Data
 public class ReportDTO implements Serializable {
-
     private Long id;
-
     @NotNull
     private LocalDate date;
-
-
     private Long posterId;
-
 }

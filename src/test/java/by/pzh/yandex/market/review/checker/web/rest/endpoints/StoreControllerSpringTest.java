@@ -91,10 +91,11 @@ public class StoreControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Store createEntity(EntityManager em) {
-        Store store = new Store()
+        Store store = Store.builder()
                 .storeUrl(DEFAULT_STORE_URL)
                 .active(DEFAULT_ACTIVE)
-                .desiredReviewsNumber(DEFAULT_DESIRED_REVIEWS_NUMBER);
+                .desiredReviewsNumber(DEFAULT_DESIRED_REVIEWS_NUMBER)
+                .build();
         return store;
     }
 
@@ -121,7 +122,7 @@ public class StoreControllerSpringTest {
         assertThat(storeList).hasSize(databaseSizeBeforeCreate + 1);
         Store testStore = storeList.get(storeList.size() - 1);
         assertThat(testStore.getStoreUrl()).isEqualTo(DEFAULT_STORE_URL);
-        assertThat(testStore.isActive()).isEqualTo(DEFAULT_ACTIVE);
+        assertThat(testStore.getActive()).isEqualTo(DEFAULT_ACTIVE);
         assertThat(testStore.getDesiredReviewsNumber()).isEqualTo(DEFAULT_DESIRED_REVIEWS_NUMBER);
     }
 
@@ -233,10 +234,9 @@ public class StoreControllerSpringTest {
 
         // Update the store
         Store updatedStore = storeRepository.findOne(store.getId());
-        updatedStore
-                .storeUrl(UPDATED_STORE_URL)
-                .active(UPDATED_ACTIVE)
-                .desiredReviewsNumber(UPDATED_DESIRED_REVIEWS_NUMBER);
+        updatedStore.setStoreUrl(UPDATED_STORE_URL);
+        updatedStore.setActive(UPDATED_ACTIVE);
+        updatedStore.setDesiredReviewsNumber(UPDATED_DESIRED_REVIEWS_NUMBER);
         StoreDTO storeDTO = storeMapper.storeToStoreDTO(updatedStore);
 
         restStoreMockMvc.perform(put("/api/stores")
@@ -249,7 +249,7 @@ public class StoreControllerSpringTest {
         assertThat(storeList).hasSize(databaseSizeBeforeUpdate);
         Store testStore = storeList.get(storeList.size() - 1);
         assertThat(testStore.getStoreUrl()).isEqualTo(UPDATED_STORE_URL);
-        assertThat(testStore.isActive()).isEqualTo(UPDATED_ACTIVE);
+        assertThat(testStore.getActive()).isEqualTo(UPDATED_ACTIVE);
         assertThat(testStore.getDesiredReviewsNumber()).isEqualTo(UPDATED_DESIRED_REVIEWS_NUMBER);
     }
 

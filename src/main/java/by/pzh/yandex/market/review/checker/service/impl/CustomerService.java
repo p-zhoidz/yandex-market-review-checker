@@ -20,14 +20,14 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class CustomerService {
-
-    private final Logger log = LoggerFactory.getLogger(CustomerService.class);
-
-    @Inject
     private CustomerRepository customerRepository;
+    private CustomerMapper customerMapper;
 
     @Inject
-    private CustomerMapper customerMapper;
+    public CustomerService(CustomerRepository customerRepository, CustomerMapper customerMapper) {
+        this.customerRepository = customerRepository;
+        this.customerMapper = customerMapper;
+    }
 
     /**
      * Save a customer.
@@ -35,12 +35,20 @@ public class CustomerService {
      * @param customerDTO the entity to save
      * @return the persisted entity
      */
-    public CustomerDTO save(CustomerDTO customerDTO) {
-        log.debug("Request to save Customer : {}", customerDTO);
+    public CustomerDTO update(CustomerDTO customerDTO) {
         Customer customer = customerMapper.customerDTOToCustomer(customerDTO);
-        customer = customerRepository.save(customer);
-        CustomerDTO result = customerMapper.customerToCustomerDTO(customer);
-        return result;
+        return save(customer);
+    }
+
+    /**
+     * Save a customer.
+     *
+     * @param customerDTO the entity to save
+     * @return the persisted entity
+     */
+    public CustomerDTO create(CustomerDTO customerDTO) {
+        Customer customer = customerMapper.customerDTOToNewCustomer(customerDTO);
+        return save(customer);
     }
 
     /**
@@ -50,7 +58,6 @@ public class CustomerService {
      */
     @Transactional(readOnly = true)
     public List<CustomerDTO> findAll() {
-        log.debug("Request to get all Customers");
         List<CustomerDTO> result = customerRepository.findAll().stream()
                 .map(customerMapper::customerToCustomerDTO)
                 .collect(Collectors.toCollection(LinkedList::new));
@@ -66,7 +73,6 @@ public class CustomerService {
      */
     @Transactional(readOnly = true)
     public CustomerDTO findOne(Long id) {
-        log.debug("Request to get Customer : {}", id);
         Customer customer = customerRepository.findOne(id);
         CustomerDTO customerDTO = customerMapper.customerToCustomerDTO(customer);
         return customerDTO;
@@ -78,7 +84,17 @@ public class CustomerService {
      * @param id the id of the entity
      */
     public void delete(Long id) {
-        log.debug("Request to delete Customer : {}", id);
         customerRepository.delete(id);
+    }
+
+    /**
+     * Save a customer.
+     *
+     * @param customer the entity to save
+     * @return the persisted entity
+     */
+    private CustomerDTO save(Customer customer) {
+        customer = customerRepository.save(customer);
+        return customerMapper.customerToCustomerDTO(customer);
     }
 }

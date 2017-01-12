@@ -4,6 +4,7 @@ import by.pzh.yandex.market.review.checker.ApplicationTestContext;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
+import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskEntryMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TaskEntryControllerSpringTest {
 
     @Inject
+    private TaskEntryService taskEntryService;
+
+    @Inject
     private TaskEntryRepository taskEntryRepository;
 
     @Inject
@@ -65,8 +69,7 @@ public class TaskEntryControllerSpringTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         TaskEntryController taskEntryResource = new TaskEntryController();
-        ReflectionTestUtils.setField(taskEntryResource, "taskEntryRepository", taskEntryRepository);
-        ReflectionTestUtils.setField(taskEntryResource, "taskEntryMapper", taskEntryMapper);
+        ReflectionTestUtils.setField(taskEntryResource, "taskEntryService", taskEntryService);
         this.restTaskEntryMockMvc = MockMvcBuilders.standaloneSetup(taskEntryResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
@@ -121,11 +124,11 @@ public class TaskEntryControllerSpringTest {
         restTaskEntryMockMvc.perform(post("/api/task-entries")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(existingTaskEntryDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isCreated());
 
         // Validate the Alice in the database
         List<TaskEntry> taskEntryList = taskEntryRepository.findAll();
-        assertThat(taskEntryList).hasSize(databaseSizeBeforeCreate);
+        assertThat(taskEntryList).hasSize(databaseSizeBeforeCreate + 1);
     }
 
     @Test

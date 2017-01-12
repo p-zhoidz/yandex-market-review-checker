@@ -87,8 +87,9 @@ public class ReportControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Report createEntity(EntityManager em) {
-        Report report = new Report()
-                .date(DEFAULT_DATE);
+        Report report = Report.builder()
+                .date(DEFAULT_DATE)
+                .build();
         return report;
     }
 
@@ -202,8 +203,7 @@ public class ReportControllerSpringTest {
 
         // Update the report
         Report updatedReport = reportRepository.findOne(report.getId());
-        updatedReport
-                .date(UPDATED_DATE);
+        updatedReport.setDate(UPDATED_DATE);
         ReportDTO reportDTO = reportMapper.reportToReportDTO(updatedReport);
 
         restReportMockMvc.perform(put("/api/reports")

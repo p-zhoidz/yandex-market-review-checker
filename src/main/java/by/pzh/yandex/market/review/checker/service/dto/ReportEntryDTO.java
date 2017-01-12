@@ -12,16 +12,9 @@ import java.util.Objects;
  */
 @Data
 public class ReportEntryDTO implements Serializable {
-
     private Long id;
-
     @NotNull
     private String text;
-
     private ReportStatus status;
-
-
     private Long reportId;
-
-
 }

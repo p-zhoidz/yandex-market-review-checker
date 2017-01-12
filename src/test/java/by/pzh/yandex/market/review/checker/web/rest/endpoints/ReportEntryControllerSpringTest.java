@@ -5,6 +5,7 @@ import by.pzh.yandex.market.review.checker.domain.ReportEntry;
 import by.pzh.yandex.market.review.checker.domain.enums.ReportStatus;
 import by.pzh.yandex.market.review.checker.repository.ReportEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ReportEntryDTO;
+import by.pzh.yandex.market.review.checker.service.impl.ReportEntryService;
 import by.pzh.yandex.market.review.checker.service.mappers.ReportEntryMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,9 @@ public class ReportEntryControllerSpringTest {
     private static final ReportStatus UPDATED_STATUS = ReportStatus.VERIFIED;
 
     @Inject
+    private ReportEntryService reportEntryService;
+
+    @Inject
     private ReportEntryRepository reportEntryRepository;
 
     @Inject
@@ -72,8 +76,7 @@ public class ReportEntryControllerSpringTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         ReportEntryController reportEntryResource = new ReportEntryController();
-        ReflectionTestUtils.setField(reportEntryResource, "reportEntryRepository", reportEntryRepository);
-        ReflectionTestUtils.setField(reportEntryResource, "reportEntryMapper", reportEntryMapper);
+        ReflectionTestUtils.setField(reportEntryResource, "reportEntryService", reportEntryService);
         this.restReportEntryMockMvc = MockMvcBuilders.standaloneSetup(reportEntryResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
@@ -86,9 +89,10 @@ public class ReportEntryControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static ReportEntry createEntity(EntityManager em) {
-        ReportEntry reportEntry = new ReportEntry()
+        ReportEntry reportEntry = ReportEntry.builder()
                 .text(DEFAULT_TEXT)
-                .status(DEFAULT_STATUS);
+                .status(DEFAULT_STATUS)
+                .build();
         return reportEntry;
     }
 
@@ -124,8 +128,9 @@ public class ReportEntryControllerSpringTest {
         int databaseSizeBeforeCreate = reportEntryRepository.findAll().size();
 
         // Create the ReportEntry with an existing ID
-        ReportEntry existingReportEntry = new ReportEntry();
-        existingReportEntry.setId(1L);
+        ReportEntry existingReportEntry = ReportEntry.builder()
+                .id(1L)
+                .build();
         ReportEntryDTO existingReportEntryDTO = reportEntryMapper.reportEntryToReportEntryDTO(existingReportEntry);
 
         // An entity with an existing ID cannot be created, so this API call must fail
@@ -205,9 +210,8 @@ public class ReportEntryControllerSpringTest {
 
         // Update the reportEntry
         ReportEntry updatedReportEntry = reportEntryRepository.findOne(reportEntry.getId());
-        updatedReportEntry
-                .text(UPDATED_TEXT)
-                .status(UPDATED_STATUS);
+        updatedReportEntry.setText(UPDATED_TEXT);
+        updatedReportEntry.setStatus(UPDATED_STATUS);
         ReportEntryDTO reportEntryDTO = reportEntryMapper.reportEntryToReportEntryDTO(updatedReportEntry);
 
         restReportEntryMockMvc.perform(put("/api/report-entries")

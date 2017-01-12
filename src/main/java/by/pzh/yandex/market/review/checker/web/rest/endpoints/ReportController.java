@@ -2,8 +2,6 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.ReportDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ReportService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -31,8 +29,6 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class ReportController {
 
-    private final Logger log = LoggerFactory.getLogger(ReportController.class);
-
     @Inject
     private ReportService reportService;
 
@@ -45,11 +41,7 @@ public class ReportController {
      */
     @PostMapping("/reports")
     public ResponseEntity<ReportDTO> createReport(@Valid @RequestBody ReportDTO reportDTO) throws URISyntaxException {
-        log.debug("REST request to save Report : {}", reportDTO);
-        if (reportDTO.getId() != null) {
-            return ResponseEntity.badRequest().body(null);
-        }
-        ReportDTO result = reportService.save(reportDTO);
+        ReportDTO result = reportService.create(reportDTO);
         return ResponseEntity.created(new URI("/api/reports/" + result.getId()))
                 .body(result);
     }
@@ -65,11 +57,10 @@ public class ReportController {
      */
     @PutMapping("/reports")
     public ResponseEntity<ReportDTO> updateReport(@Valid @RequestBody ReportDTO reportDTO) throws URISyntaxException {
-        log.debug("REST request to update Report : {}", reportDTO);
         if (reportDTO.getId() == null) {
             return createReport(reportDTO);
         }
-        ReportDTO result = reportService.save(reportDTO);
+        ReportDTO result = reportService.update(reportDTO);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -84,7 +75,6 @@ public class ReportController {
     @GetMapping("/reports")
     public ResponseEntity<List<ReportDTO>> getAllReports(/*@ApiParam*/ Pageable pageable)
             throws URISyntaxException {
-        log.debug("REST request to get a page of Reports");
         Page<ReportDTO> page = reportService.findAll(pageable);
         return new ResponseEntity<>(page.getContent(), HttpStatus.OK);
     }
@@ -97,7 +87,6 @@ public class ReportController {
      */
     @GetMapping("/reports/{id}")
     public ResponseEntity<ReportDTO> getReport(@PathVariable Long id) {
-        log.debug("REST request to get Report : {}", id);
         ReportDTO reportDTO = reportService.findOne(id);
         return Optional.ofNullable(reportDTO)
                 .map(result -> new ResponseEntity<>(
@@ -114,7 +103,6 @@ public class ReportController {
      */
     @DeleteMapping("/reports/{id}")
     public ResponseEntity<Void> deleteReport(@PathVariable Long id) {
-        log.debug("REST request to delete Report : {}", id);
         reportService.delete(id);
         return ResponseEntity.ok().build();
     }

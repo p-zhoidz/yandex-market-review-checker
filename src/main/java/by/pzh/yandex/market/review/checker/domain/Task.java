@@ -1,7 +1,10 @@
 package by.pzh.yandex.market.review.checker.domain;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,8 +22,11 @@ import java.util.Objects;
  * A Task.
  */
 @Entity
-@Table(name = "task")
+@Table(name = "tasks")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Task implements Serializable {
 
     private static final long serialVersionUID = 1L;

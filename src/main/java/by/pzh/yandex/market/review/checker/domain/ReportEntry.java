@@ -2,7 +2,10 @@ package by.pzh.yandex.market.review.checker.domain;
 
 
 import by.pzh.yandex.market.review.checker.domain.enums.ReportStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,16 +18,17 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * A ReportEntry.
  */
 @Entity
-@Table(name = "report_entry")
+@Table(name = "report_entries")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReportEntry implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @Id

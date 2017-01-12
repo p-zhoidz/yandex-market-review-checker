@@ -1,11 +1,7 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
-import by.pzh.yandex.market.review.checker.domain.ReportEntry;
-import by.pzh.yandex.market.review.checker.repository.ReportEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ReportEntryDTO;
-import by.pzh.yandex.market.review.checker.service.mappers.ReportEntryMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import by.pzh.yandex.market.review.checker.service.impl.ReportEntryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,13 +27,8 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class ReportEntryController {
 
-    private final Logger log = LoggerFactory.getLogger(ReportEntryController.class);
-
     @Inject
-    private ReportEntryRepository reportEntryRepository;
-
-    @Inject
-    private ReportEntryMapper reportEntryMapper;
+    private ReportEntryService reportEntryService;
 
     /**
      * POST  /report-entries : Create a new reportEntry.
@@ -47,14 +38,10 @@ public class ReportEntryController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/report-entries")
-    public ResponseEntity<ReportEntryDTO> createReportEntry(@Valid @RequestBody ReportEntryDTO reportEntryDTO) throws URISyntaxException {
-        log.debug("REST request to save ReportEntry : {}", reportEntryDTO);
-
-        ReportEntry reportEntry = reportEntryMapper.reportEntryDTOToReportEntry(reportEntryDTO);
-        reportEntry = reportEntryRepository.save(reportEntry);
-        ReportEntryDTO result = reportEntryMapper.reportEntryToReportEntryDTO(reportEntry);
+    public ResponseEntity<ReportEntryDTO> createReportEntry(@Valid @RequestBody ReportEntryDTO reportEntryDTO)
+            throws URISyntaxException {
+        ReportEntryDTO result = reportEntryService.create(reportEntryDTO);
         return ResponseEntity.created(new URI("/api/report-entries/" + result.getId()))
-
                 .body(result);
     }
 
@@ -68,14 +55,12 @@ public class ReportEntryController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/report-entries")
-    public ResponseEntity<ReportEntryDTO> updateReportEntry(@Valid @RequestBody ReportEntryDTO reportEntryDTO) throws URISyntaxException {
-        log.debug("REST request to update ReportEntry : {}", reportEntryDTO);
+    public ResponseEntity<ReportEntryDTO> updateReportEntry(@Valid @RequestBody ReportEntryDTO reportEntryDTO)
+            throws URISyntaxException {
         if (reportEntryDTO.getId() == null) {
             return createReportEntry(reportEntryDTO);
         }
-        ReportEntry reportEntry = reportEntryMapper.reportEntryDTOToReportEntry(reportEntryDTO);
-        reportEntry = reportEntryRepository.save(reportEntry);
-        ReportEntryDTO result = reportEntryMapper.reportEntryToReportEntryDTO(reportEntry);
+        ReportEntryDTO result = reportEntryService.update(reportEntryDTO);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -87,9 +72,7 @@ public class ReportEntryController {
      */
     @GetMapping("/report-entries")
     public List<ReportEntryDTO> getAllReportEntries() {
-        log.debug("REST request to get all ReportEntries");
-        List<ReportEntry> reportEntries = reportEntryRepository.findAll();
-        return reportEntryMapper.reportEntriesToReportEntryDTOs(reportEntries);
+        return reportEntryService.findAll();
     }
 
     /**
@@ -100,9 +83,7 @@ public class ReportEntryController {
      */
     @GetMapping("/report-entries/{id}")
     public ResponseEntity<ReportEntryDTO> getReportEntry(@PathVariable Long id) {
-        log.debug("REST request to get ReportEntry : {}", id);
-        ReportEntry reportEntry = reportEntryRepository.findOne(id);
-        ReportEntryDTO reportEntryDTO = reportEntryMapper.reportEntryToReportEntryDTO(reportEntry);
+        ReportEntryDTO reportEntryDTO = reportEntryService.findOne(id);
         return Optional.ofNullable(reportEntryDTO)
                 .map(result -> new ResponseEntity<>(
                         result,
@@ -118,8 +99,7 @@ public class ReportEntryController {
      */
     @DeleteMapping("/report-entries/{id}")
     public ResponseEntity<Void> deleteReportEntry(@PathVariable Long id) {
-        log.debug("REST request to delete ReportEntry : {}", id);
-        reportEntryRepository.delete(id);
+        reportEntryService.delete(id);
         return ResponseEntity.ok().build();
     }
 

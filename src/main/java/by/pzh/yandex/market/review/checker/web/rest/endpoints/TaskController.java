@@ -2,8 +2,6 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
 import by.pzh.yandex.market.review.checker.service.impl.TaskService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +27,6 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class TaskController {
 
-    private final Logger log = LoggerFactory.getLogger(TaskController.class);
-
     @Inject
     private TaskService taskService;
 
@@ -43,8 +39,7 @@ public class TaskController {
      */
     @PostMapping("/tasks")
     public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
-        log.debug("REST request to save Task : {}", taskDTO);
-        TaskDTO result = taskService.save(taskDTO);
+        TaskDTO result = taskService.create(taskDTO);
         return ResponseEntity.created(new URI("/api/tasks/" + result.getId()))
                 .body(result);
     }
@@ -60,11 +55,10 @@ public class TaskController {
      */
     @PutMapping("/tasks")
     public ResponseEntity<TaskDTO> updateTask(@Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
-        log.debug("REST request to update Task : {}", taskDTO);
         if (taskDTO.getId() == null) {
             return createTask(taskDTO);
         }
-        TaskDTO result = taskService.save(taskDTO);
+        TaskDTO result = taskService.update(taskDTO);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -76,7 +70,6 @@ public class TaskController {
      */
     @GetMapping("/tasks")
     public List<TaskDTO> getAllTasks() {
-        log.debug("REST request to get all Tasks");
         return taskService.findAll();
     }
 
@@ -88,7 +81,6 @@ public class TaskController {
      */
     @GetMapping("/tasks/{id}")
     public ResponseEntity<TaskDTO> getTask(@PathVariable Long id) {
-        log.debug("REST request to get Task : {}", id);
         TaskDTO taskDTO = taskService.findOne(id);
         return Optional.ofNullable(taskDTO)
                 .map(result -> new ResponseEntity<>(
@@ -105,7 +97,6 @@ public class TaskController {
      */
     @DeleteMapping("/tasks/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        log.debug("REST request to delete Task : {}", id);
         taskService.delete(id);
         return ResponseEntity.ok().build();
     }

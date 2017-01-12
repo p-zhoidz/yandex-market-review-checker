@@ -97,12 +97,13 @@ public class PosterControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Poster createEntity(EntityManager em) {
-        Poster poster = new Poster()
+        Poster poster = Poster.builder()
                 .email(DEFAULT_EMAIL)
                 .name(DEFAULT_NAME)
                 .rate(DEFAULT_RATE)
                 .capacity(DEFAULT_CAPACITY)
-                .active(DEFAULT_ACTIVE);
+                .active(DEFAULT_ACTIVE)
+                .build();
         return poster;
     }
 
@@ -132,7 +133,7 @@ public class PosterControllerSpringTest {
         assertThat(testPoster.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testPoster.getRate()).isEqualTo(DEFAULT_RATE);
         assertThat(testPoster.getCapacity()).isEqualTo(DEFAULT_CAPACITY);
-        assertThat(testPoster.isActive()).isEqualTo(DEFAULT_ACTIVE);
+        assertThat(testPoster.getActive()).isEqualTo(DEFAULT_ACTIVE);
     }
 
     @Test
@@ -285,12 +286,11 @@ public class PosterControllerSpringTest {
 
         // Update the poster
         Poster updatedPoster = posterRepository.findOne(poster.getId());
-        updatedPoster
-                .email(UPDATED_EMAIL)
-                .name(UPDATED_NAME)
-                .rate(UPDATED_RATE)
-                .capacity(UPDATED_CAPACITY)
-                .active(UPDATED_ACTIVE);
+        updatedPoster.setEmail(UPDATED_EMAIL);
+        updatedPoster.setName(UPDATED_NAME);
+        updatedPoster.setRate(UPDATED_RATE);
+        updatedPoster.setCapacity(UPDATED_CAPACITY);
+        updatedPoster.setActive(UPDATED_ACTIVE);
         PosterDTO posterDTO = posterMapper.posterToPosterDTO(updatedPoster);
 
         restPosterMockMvc.perform(put("/api/posters")
@@ -306,7 +306,7 @@ public class PosterControllerSpringTest {
         assertThat(testPoster.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testPoster.getRate()).isEqualTo(UPDATED_RATE);
         assertThat(testPoster.getCapacity()).isEqualTo(UPDATED_CAPACITY);
-        assertThat(testPoster.isActive()).isEqualTo(UPDATED_ACTIVE);
+        assertThat(testPoster.getActive()).isEqualTo(UPDATED_ACTIVE);
     }
 
     @Test

@@ -38,14 +38,16 @@ public class CustomerController {
      * POST  /customers : Create a new customer.
      *
      * @param customerDTO the customerDTO to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new customerDTO, or with status 400 (Bad Request) if the customer has already an ID
+     * @return the ResponseEntity with status 201 (Created) and with body the new customerDTO,
+     * or with status 422 (Bad Request) if the customer DTO is not valid.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/customers")
-    public ResponseEntity<CustomerDTO> createCustomer(@Valid @RequestBody CustomerDTO customerDTO) throws URISyntaxException {
+    public ResponseEntity<CustomerDTO> createCustomer(@Valid @RequestBody CustomerDTO customerDTO)
+            throws URISyntaxException {
         log.debug("REST request to save Customer : {}", customerDTO);
 
-        CustomerDTO result = customerService.save(customerDTO);
+        CustomerDTO result = customerService.create(customerDTO);
         return ResponseEntity.created(new URI("/api/customers/" + result.getId()))
                 .body(result);
     }
@@ -65,7 +67,7 @@ public class CustomerController {
         if (customerDTO.getId() == null) {
             return createCustomer(customerDTO);
         }
-        CustomerDTO result = customerService.save(customerDTO);
+        CustomerDTO result = customerService.update(customerDTO);
         return ResponseEntity.ok()
                 .body(result);
     }

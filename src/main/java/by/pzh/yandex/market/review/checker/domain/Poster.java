@@ -1,7 +1,10 @@
 package by.pzh.yandex.market.review.checker.domain;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,8 +20,11 @@ import java.util.Objects;
  * A Poster.
  */
 @Entity
-@Table(name = "poster")
+@Table(name = "posters")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Poster implements Serializable {
 
     private static final long serialVersionUID = 1L;

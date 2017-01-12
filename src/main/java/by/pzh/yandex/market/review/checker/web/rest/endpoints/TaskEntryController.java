@@ -1,9 +1,7 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
-import by.pzh.yandex.market.review.checker.domain.TaskEntry;
-import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
-import by.pzh.yandex.market.review.checker.service.mappers.TaskEntryMapper;
+import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,10 +31,8 @@ public class TaskEntryController {
     private final Logger log = LoggerFactory.getLogger(TaskEntryController.class);
 
     @Inject
-    private TaskEntryRepository taskEntryRepository;
+    private TaskEntryService taskEntryService;
 
-    @Inject
-    private TaskEntryMapper taskEntryMapper;
 
     /**
      * POST  /task-entries : Create a new taskEntry.
@@ -46,11 +42,9 @@ public class TaskEntryController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/task-entries")
-    public ResponseEntity<TaskEntryDTO> createTaskEntry(@RequestBody TaskEntryDTO taskEntryDTO) throws URISyntaxException {
-        log.debug("REST request to save TaskEntry : {}", taskEntryDTO);
-        TaskEntry taskEntry = taskEntryMapper.taskEntryDTOToTaskEntry(taskEntryDTO);
-        taskEntry = taskEntryRepository.save(taskEntry);
-        TaskEntryDTO result = taskEntryMapper.taskEntryToTaskEntryDTO(taskEntry);
+    public ResponseEntity<TaskEntryDTO> createTaskEntry(@RequestBody TaskEntryDTO taskEntryDTO)
+            throws URISyntaxException {
+        TaskEntryDTO result = taskEntryService.create(taskEntryDTO);
         return ResponseEntity.created(new URI("/api/task-entries/" + result.getId()))
                 .body(result);
     }
@@ -65,14 +59,12 @@ public class TaskEntryController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/task-entries")
-    public ResponseEntity<TaskEntryDTO> updateTaskEntry(@RequestBody TaskEntryDTO taskEntryDTO) throws URISyntaxException {
-        log.debug("REST request to update TaskEntry : {}", taskEntryDTO);
+    public ResponseEntity<TaskEntryDTO> updateTaskEntry(@RequestBody TaskEntryDTO taskEntryDTO)
+            throws URISyntaxException {
         if (taskEntryDTO.getId() == null) {
             return createTaskEntry(taskEntryDTO);
         }
-        TaskEntry taskEntry = taskEntryMapper.taskEntryDTOToTaskEntry(taskEntryDTO);
-        taskEntry = taskEntryRepository.save(taskEntry);
-        TaskEntryDTO result = taskEntryMapper.taskEntryToTaskEntryDTO(taskEntry);
+        TaskEntryDTO result = taskEntryService.update(taskEntryDTO);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -84,9 +76,7 @@ public class TaskEntryController {
      */
     @GetMapping("/task-entries")
     public List<TaskEntryDTO> getAllTaskEntries() {
-        log.debug("REST request to get all TaskEntries");
-        List<TaskEntry> taskEntries = taskEntryRepository.findAll();
-        return taskEntryMapper.taskEntriesToTaskEntryDTOs(taskEntries);
+        return taskEntryService.findAll();
     }
 
     /**
@@ -97,9 +87,7 @@ public class TaskEntryController {
      */
     @GetMapping("/task-entries/{id}")
     public ResponseEntity<TaskEntryDTO> getTaskEntry(@PathVariable Long id) {
-        log.debug("REST request to get TaskEntry : {}", id);
-        TaskEntry taskEntry = taskEntryRepository.findOne(id);
-        TaskEntryDTO taskEntryDTO = taskEntryMapper.taskEntryToTaskEntryDTO(taskEntry);
+        TaskEntryDTO taskEntryDTO = taskEntryService.findOne(id);
         return Optional.ofNullable(taskEntryDTO)
                 .map(result -> new ResponseEntity<>(
                         result,
@@ -116,7 +104,7 @@ public class TaskEntryController {
     @DeleteMapping("/task-entries/{id}")
     public ResponseEntity<Void> deleteTaskEntry(@PathVariable Long id) {
         log.debug("REST request to delete TaskEntry : {}", id);
-        taskEntryRepository.delete(id);
+        taskEntryService.delete(id);
         return ResponseEntity.ok().build();
     }
 

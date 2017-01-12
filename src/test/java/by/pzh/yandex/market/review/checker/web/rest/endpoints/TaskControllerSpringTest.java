@@ -93,10 +93,11 @@ public class TaskControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Task createEntity(EntityManager em) {
-        Task task = new Task()
+        Task task = Task.builder()
                 .startDate(DEFAULT_START_DATE)
                 .endDate(DEFAULT_END_DATE)
-                .comment(DEFAULT_COMMENT);
+                .comment(DEFAULT_COMMENT)
+                .build();
         return task;
     }
 
@@ -235,10 +236,9 @@ public class TaskControllerSpringTest {
 
         // Update the task
         Task updatedTask = taskRepository.findOne(task.getId());
-        updatedTask
-                .startDate(UPDATED_START_DATE)
-                .endDate(UPDATED_END_DATE)
-                .comment(UPDATED_COMMENT);
+        updatedTask.setStartDate(UPDATED_START_DATE);
+        updatedTask.setEndDate(UPDATED_END_DATE);
+        updatedTask.setComment(UPDATED_COMMENT);
         TaskDTO taskDTO = taskMapper.taskToTaskDTO(updatedTask);
 
         restTaskMockMvc.perform(put("/api/tasks")

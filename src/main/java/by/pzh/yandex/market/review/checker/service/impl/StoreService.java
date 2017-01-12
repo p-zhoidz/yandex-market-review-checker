@@ -4,8 +4,6 @@ import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.StoreMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +18,14 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class StoreService {
-
-    private final Logger log = LoggerFactory.getLogger(StoreService.class);
-
-    @Inject
     private StoreRepository storeRepository;
+    private StoreMapper storeMapper;
 
     @Inject
-    private StoreMapper storeMapper;
+    public StoreService(StoreRepository storeRepository, StoreMapper storeMapper) {
+        this.storeRepository = storeRepository;
+        this.storeMapper = storeMapper;
+    }
 
     /**
      * Save a store.
@@ -35,12 +33,20 @@ public class StoreService {
      * @param storeDTO the entity to save
      * @return the persisted entity
      */
-    public StoreDTO save(StoreDTO storeDTO) {
-        log.debug("Request to save Store : {}", storeDTO);
+    public StoreDTO create(StoreDTO storeDTO) {
+        Store store = storeMapper.storeDTOToNewStore(storeDTO);
+        return save(store);
+    }
+
+    /**
+     * Save a store.
+     *
+     * @param storeDTO the entity to save
+     * @return the persisted entity
+     */
+    public StoreDTO update(StoreDTO storeDTO) {
         Store store = storeMapper.storeDTOToStore(storeDTO);
-        store = storeRepository.save(store);
-        StoreDTO result = storeMapper.storeToStoreDTO(store);
-        return result;
+        return save(store);
     }
 
     /**
@@ -50,12 +56,9 @@ public class StoreService {
      */
     @Transactional(readOnly = true)
     public List<StoreDTO> findAll() {
-        log.debug("Request to get all Stores");
-        List<StoreDTO> result = storeRepository.findAll().stream()
+        return storeRepository.findAll().stream()
                 .map(storeMapper::storeToStoreDTO)
                 .collect(Collectors.toCollection(LinkedList::new));
-
-        return result;
     }
 
     /**
@@ -66,10 +69,8 @@ public class StoreService {
      */
     @Transactional(readOnly = true)
     public StoreDTO findOne(Long id) {
-        log.debug("Request to get Store : {}", id);
         Store store = storeRepository.findOne(id);
-        StoreDTO storeDTO = storeMapper.storeToStoreDTO(store);
-        return storeDTO;
+        return storeMapper.storeToStoreDTO(store);
     }
 
     /**
@@ -78,7 +79,17 @@ public class StoreService {
      * @param id the id of the entity
      */
     public void delete(Long id) {
-        log.debug("Request to delete Store : {}", id);
         storeRepository.delete(id);
+    }
+
+    /**
+     * Save a store.
+     *
+     * @param store the entity to save
+     * @return the persisted entity
+     */
+    private StoreDTO save(Store store) {
+        store = storeRepository.save(store);
+        return storeMapper.storeToStoreDTO(store);
     }
 }

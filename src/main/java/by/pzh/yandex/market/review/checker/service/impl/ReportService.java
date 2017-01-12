@@ -4,8 +4,6 @@ import by.pzh.yandex.market.review.checker.domain.Report;
 import by.pzh.yandex.market.review.checker.repository.ReportRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ReportDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.ReportMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,14 +17,25 @@ import javax.inject.Inject;
 @Service
 @Transactional
 public class ReportService {
-
-    private final Logger log = LoggerFactory.getLogger(ReportService.class);
-
-    @Inject
     private ReportRepository reportRepository;
+    private ReportMapper reportMapper;
 
     @Inject
-    private ReportMapper reportMapper;
+    public ReportService(ReportRepository reportRepository, ReportMapper reportMapper) {
+        this.reportRepository = reportRepository;
+        this.reportMapper = reportMapper;
+    }
+
+    /**
+     * Save a report.
+     *
+     * @param report the entity to save
+     * @return the persisted entity
+     */
+    private ReportDTO save(Report report) {
+        report = reportRepository.save(report);
+        return reportMapper.reportToReportDTO(report);
+    }
 
     /**
      * Save a report.
@@ -34,12 +43,20 @@ public class ReportService {
      * @param reportDTO the entity to save
      * @return the persisted entity
      */
-    public ReportDTO save(ReportDTO reportDTO) {
-        log.debug("Request to save Report : {}", reportDTO);
+    public ReportDTO create(ReportDTO reportDTO) {
+        Report report = reportMapper.reportDTOToNewReport(reportDTO);
+        return save(report);
+    }
+
+    /**
+     * Save a report.
+     *
+     * @param reportDTO the entity to save
+     * @return the persisted entity
+     */
+    public ReportDTO update(ReportDTO reportDTO) {
         Report report = reportMapper.reportDTOToReport(reportDTO);
-        report = reportRepository.save(report);
-        ReportDTO result = reportMapper.reportToReportDTO(report);
-        return result;
+        return save(report);
     }
 
     /**
@@ -50,7 +67,6 @@ public class ReportService {
      */
     @Transactional(readOnly = true)
     public Page<ReportDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all Reports");
         Page<Report> result = reportRepository.findAll(pageable);
         return result.map(report -> reportMapper.reportToReportDTO(report));
     }
@@ -63,7 +79,6 @@ public class ReportService {
      */
     @Transactional(readOnly = true)
     public ReportDTO findOne(Long id) {
-        log.debug("Request to get Report : {}", id);
         Report report = reportRepository.findOne(id);
         ReportDTO reportDTO = reportMapper.reportToReportDTO(report);
         return reportDTO;
@@ -75,7 +90,6 @@ public class ReportService {
      * @param id the id of the entity
      */
     public void delete(Long id) {
-        log.debug("Request to delete Report : {}", id);
         reportRepository.delete(id);
     }
 }

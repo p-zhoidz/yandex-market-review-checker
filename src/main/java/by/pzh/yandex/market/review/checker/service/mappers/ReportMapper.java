@@ -3,8 +3,10 @@ package by.pzh.yandex.market.review.checker.service.mappers;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Report;
 import by.pzh.yandex.market.review.checker.service.dto.ReportDTO;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 import java.util.List;
 
@@ -19,8 +21,14 @@ public interface ReportMapper {
 
     List<ReportDTO> reportsToReportDTOs(List<Report> reports);
 
+    @Named("reportDTOToReport")
     @Mapping(source = "posterId", target = "poster")
     Report reportDTOToReport(ReportDTO reportDTO);
+
+    @IterableMapping(qualifiedByName = "reportDTOToReport")
+    @Mapping(source = "posterId", target = "poster")
+    @Mapping(target = "id", ignore = true)
+    Report reportDTOToNewReport(ReportDTO reportDTO);
 
     List<Report> reportDTOsToReports(List<ReportDTO> reportDTOs);
 

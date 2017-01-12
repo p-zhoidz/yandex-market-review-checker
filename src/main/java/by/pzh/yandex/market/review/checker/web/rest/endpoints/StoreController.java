@@ -2,8 +2,6 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.impl.StoreService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +27,6 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class StoreController {
 
-    private final Logger log = LoggerFactory.getLogger(StoreController.class);
-
     @Inject
     private StoreService storeService;
 
@@ -43,8 +39,7 @@ public class StoreController {
      */
     @PostMapping("/stores")
     public ResponseEntity<StoreDTO> createStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
-        log.debug("REST request to save Store : {}", storeDTO);
-        StoreDTO result = storeService.save(storeDTO);
+        StoreDTO result = storeService.create(storeDTO);
         return ResponseEntity.created(new URI("/api/stores/" + result.getId()))
                 .body(result);
     }
@@ -60,11 +55,10 @@ public class StoreController {
      */
     @PutMapping("/stores")
     public ResponseEntity<StoreDTO> updateStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
-        log.debug("REST request to update Store : {}", storeDTO);
-        if (storeDTO.getId() == null) {
+        if(storeDTO.getId() == null) {
             return createStore(storeDTO);
         }
-        StoreDTO result = storeService.save(storeDTO);
+        StoreDTO result = storeService.update(storeDTO);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -76,7 +70,6 @@ public class StoreController {
      */
     @GetMapping("/stores")
     public List<StoreDTO> getAllStores() {
-        log.debug("REST request to get all Stores");
         return storeService.findAll();
     }
 
@@ -88,7 +81,6 @@ public class StoreController {
      */
     @GetMapping("/stores/{id}")
     public ResponseEntity<StoreDTO> getStore(@PathVariable Long id) {
-        log.debug("REST request to get Store : {}", id);
         StoreDTO storeDTO = storeService.findOne(id);
         return Optional.ofNullable(storeDTO)
                 .map(result -> new ResponseEntity<>(
@@ -105,7 +97,6 @@ public class StoreController {
      */
     @DeleteMapping("/stores/{id}")
     public ResponseEntity<Void> deleteStore(@PathVariable Long id) {
-        log.debug("REST request to delete Store : {}", id);
         storeService.delete(id);
         return ResponseEntity.ok().build();
     }

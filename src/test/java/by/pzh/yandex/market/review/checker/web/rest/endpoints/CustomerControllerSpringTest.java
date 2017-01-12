@@ -88,9 +88,10 @@ public class CustomerControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Customer createEntity(EntityManager em) {
-        Customer customer = new Customer()
+        Customer customer = Customer.builder()
                 .email(DEFAULT_EMAIL)
-                .active(DEFAULT_ACTIVE);
+                .active(DEFAULT_ACTIVE)
+                .build();
         return customer;
     }
 
@@ -117,7 +118,7 @@ public class CustomerControllerSpringTest {
         assertThat(customerList).hasSize(databaseSizeBeforeCreate + 1);
         Customer testCustomer = customerList.get(customerList.size() - 1);
         assertThat(testCustomer.getEmail()).isEqualTo(DEFAULT_EMAIL);
-        assertThat(testCustomer.isActive()).isEqualTo(DEFAULT_ACTIVE);
+        assertThat(testCustomer.getActive()).isEqualTo(DEFAULT_ACTIVE);
     }
 
     @Test
@@ -207,9 +208,8 @@ public class CustomerControllerSpringTest {
 
         // Update the customer
         Customer updatedCustomer = customerRepository.findOne(customer.getId());
-        updatedCustomer
-                .email(UPDATED_EMAIL)
-                .active(UPDATED_ACTIVE);
+        updatedCustomer.setEmail(UPDATED_EMAIL);
+        updatedCustomer.setActive(UPDATED_ACTIVE);
         CustomerDTO customerDTO = customerMapper.customerToCustomerDTO(updatedCustomer);
 
         restCustomerMockMvc.perform(put("/api/customers")
@@ -222,7 +222,7 @@ public class CustomerControllerSpringTest {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
         Customer testCustomer = customerList.get(customerList.size() - 1);
         assertThat(testCustomer.getEmail()).isEqualTo(UPDATED_EMAIL);
-        assertThat(testCustomer.isActive()).isEqualTo(UPDATED_ACTIVE);
+        assertThat(testCustomer.getActive()).isEqualTo(UPDATED_ACTIVE);
     }
 
     @Test
