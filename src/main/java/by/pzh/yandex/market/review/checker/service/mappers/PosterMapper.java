@@ -15,16 +15,48 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {})
 public interface PosterMapper {
 
+    /**
+     * Map {@link Poster} to {@link PosterDTO}.
+     *
+     * @param poster entity to be mapped.
+     * @return instance of the {@link PosterDTO}.
+     */
     PosterDTO posterToPosterDTO(Poster poster);
 
+    /**
+     * Map list of {@link Poster} to list of {@link PosterDTO}.
+     *
+     * @param posters list of entities to be mapped.
+     * @return list of {@link PosterDTO}.
+     */
     List<PosterDTO> postersToPosterDTOs(List<Poster> posters);
 
+    /**
+     * Map {@link PosterDTO} to {@link Poster}.
+     *
+     * @param posterDTO entity to be mapped.
+     * @return instance of the {@link Poster}.
+     */
     @Named("posterDTOToPoster")
     Poster posterDTOToPoster(PosterDTO posterDTO);
 
+
+    /**
+     * Map {@link PosterDTO} to {@link Poster}.
+     * Skipping id.
+     *
+     * @param posterDTO entity to be mapped.
+     * @return instance of the {@link Poster}.
+     */
     @Mapping(target = "id", ignore = true)
     Poster posterDTOToNewPoster(PosterDTO posterDTO);
 
+    /**
+     * Map list of {@link PosterDTO} to list of {@link Poster}.
+     *
+     * @param posterDTOs list of entities to be mapped.
+     * @return list of {@link Poster}.
+     */
     @IterableMapping(qualifiedByName = "posterDTOToPoster")
     List<Poster> posterDTOsToPosters(List<PosterDTO> posterDTOs);
 }

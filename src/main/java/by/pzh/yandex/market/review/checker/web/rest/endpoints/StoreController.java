@@ -39,7 +39,7 @@ public class StoreController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/stores")
-    public ResponseEntity<StoreDTO> createStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
+    private ResponseEntity<StoreDTO> createStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
         StoreDTO result = storeService.create(storeDTO);
         return ResponseEntity.created(new URI("/api/stores/" + result.getId()))
                 .body(result);
@@ -56,7 +56,7 @@ public class StoreController {
      */
     @PutMapping("/stores")
     public ResponseEntity<StoreDTO> updateStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
-        if(storeDTO.getId() == null) {
+        if (storeDTO.getId() == null) {
             return createStore(storeDTO);
         }
         StoreDTO result = storeService.update(storeDTO);
