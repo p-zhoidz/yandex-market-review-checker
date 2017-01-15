@@ -56,7 +56,7 @@ public class LoggingAspect {
     /**
      * Around pointcut.
      *
-     * @param joinPoint joint pooint
+     * @param joinPoint joint point.
      * @return result of the function.
      * @throws Throwable standard exception cases.
      */

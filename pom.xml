@@ -252,50 +252,64 @@
         </testResources>
 
         <plugins>
+
+            <!-- first de-lombok the sources to make getters/setters visible for mapstruct,
+            but *DON'T'* add the output directory to the sources, as we will only need it for mapstruct processing -->
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.16.12.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>delombok</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>src/main/java</sourceDirectory>
+                            <addOutputDirectory>false</addOutputDirectory>
+                            <outputDirectory>${project.build.directory}/delombok</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- use the de-lomobok files to create the necessary mappers -->
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <defaultOutputDirectory>
+                        ${project.build.directory}/generated-sources/mapstruct
+                    </defaultOutputDirectory>
+                    <processors>
+                        <processor>org.mapstruct.ap.MappingProcessor</processor>
+                    </processors>
+                    <sourceDirectory>
+                        ${project.build.directory}/delombok
+                    </sourceDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>process</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- now take the original sources together with the created mappers to the compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>Normal compilation (excluding mappers)</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/**/mappers/**/*</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>MapStruct mappers</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <compilerArgs>
-                                <compilerArg>-Amapstruct.defaultComponentModel=spring</compilerArg>
-                                <compilerArg>-Amapstruct.suppressGeneratorTimestamp=true</compilerArg>
-                            </compilerArgs>
-                            <includes>
-                                <include>**/**/mappers/**/*</include>
-                                <include>${project.build.directory}/classes/**/*</include>
-                            </includes>
-                            <annotationProcessors>
-                                <processor>org.mapstruct.ap.MappingProcessor</processor>
-                                <processor>org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor</processor>
-                            </annotationProcessors>
-                        </configuration>
-                    </execution>
-                </executions>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <annotationProcessors>
+                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>
+                    </annotationProcessors>
                 </configuration>
             </plugin>
 
