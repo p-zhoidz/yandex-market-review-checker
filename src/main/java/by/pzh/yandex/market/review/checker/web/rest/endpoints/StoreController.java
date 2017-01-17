@@ -2,6 +2,12 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.impl.StoreService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,14 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 /**
  * REST controller for managing Store.
@@ -38,7 +48,7 @@ public class StoreController {
      * or with status 200 (OK) if the store has already an ID and was updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PostMapping("/stores")
+    @PostMapping("/clients/{id}/stores")
     private ResponseEntity<StoreDTO> createStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
         StoreDTO result = storeService.create(storeDTO);
         return ResponseEntity.created(new URI("/api/stores/" + result.getId()))
@@ -51,10 +61,10 @@ public class StoreController {
      * @param storeDTO the storeDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated storeDTO,
      * or with status 422 (Bad Request) if the storeDTO is not valid,
-     * or with status 500 (Internal Server Error) if the storeDTO couldnt be updated
+     * or with status 500 (Internal Server Error) if the storeDTO could not be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping("/stores")
+    @PutMapping("/clients/stores")
     public ResponseEntity<StoreDTO> updateStore(@Valid @RequestBody StoreDTO storeDTO) throws URISyntaxException {
         if (storeDTO.getId() == null) {
             return createStore(storeDTO);
@@ -69,9 +79,17 @@ public class StoreController {
      *
      * @return the ResponseEntity with status 200 (OK) and the list of stores in body
      */
-    @GetMapping("/stores")
-    public List<StoreDTO> getAllStores() {
-        return storeService.findAll();
+    //@GetMapping("/clients/{id}/stores")
+    @RequestMapping(value = "/clients/{id}/stores", method = RequestMethod.GET)
+    public ResponseEntity<Page<Resource<StoreDTO>>> getClientStores(@PathVariable long id,
+                                                                    @PageableDefault Pageable p) {
+
+        Page<Resource<StoreDTO>> result = storeService.getCustomerStores(id, p.getPageNumber(), p.getPageSize())
+                .map(dto -> new Resource<>(dto, linkTo(
+                        methodOn(StoreController.class).getStore(dto.getId()))
+                        .withSelfRel()));
+
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -80,7 +98,7 @@ public class StoreController {
      * @param id the id of the storeDTO to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the storeDTO, or with status 404 (Not Found)
      */
-    @GetMapping("/stores/{id}")
+    @RequestMapping(value = "/clients/stores/{id}", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<StoreDTO> getStore(@PathVariable Long id) {
         StoreDTO storeDTO = storeService.findOne(id);
         return Optional.ofNullable(storeDTO)
@@ -96,7 +114,7 @@ public class StoreController {
      * @param id the id of the storeDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
-    @DeleteMapping("/stores/{id}")
+    @DeleteMapping("/clients/stores/{id}")
     public ResponseEntity<Void> deleteStore(@PathVariable Long id) {
         storeService.delete(id);
         return ResponseEntity.ok().build();

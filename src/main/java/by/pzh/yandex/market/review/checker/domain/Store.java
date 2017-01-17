@@ -47,6 +47,6 @@ public class Store implements Serializable {
     private Integer desiredReviewsNumber;
 
     @ManyToOne
-    private Customer owner;
+    private Client owner;
 
 }

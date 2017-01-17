@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -28,6 +29,7 @@ import java.util.Collection;
         @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = LiquibaseConfiguration.class)})
 @EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class})
 @EnableConfigurationProperties({ApplicationProperties.class})
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class YMRCApp extends WebMvcConfigurerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(YMRCApp.class);

@@ -1,6 +1,6 @@
 package by.pzh.yandex.market.review.checker.service.mappers;
 
-import by.pzh.yandex.market.review.checker.domain.Customer;
+import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import org.mapstruct.IterableMapping;
@@ -64,17 +64,17 @@ public interface StoreMapper {
     List<Store> storeDTOsToStores(List<StoreDTO> storeDTOs);
 
     /**
-     * Generate {@link Customer} based on id.
+     * Generate {@link Client} based on id.
      *
      * @param id Identifier.
-     * @return {@link Customer}.
+     * @return {@link Client}.
      */
-    default Customer customerFromId(Long id) {
+    default Client customerFromId(Long id) {
         if (id == null) {
             return null;
         }
-        Customer customer = new Customer();
-        customer.setId(id);
-        return customer;
+        Client client = new Client();
+        client.setId(id);
+        return client;
     }
 }

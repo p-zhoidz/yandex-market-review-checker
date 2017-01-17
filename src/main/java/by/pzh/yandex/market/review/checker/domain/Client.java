@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.domain;
 
 
+import by.pzh.yandex.market.review.checker.domain.features.AbstractAuditingEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,15 +17,15 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * A Customer.
+ * A Client entity.
  */
 @Entity
-@Table(name = "customers")
+@Table(name = "clients")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Customer implements Serializable {
+public class Client extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -38,5 +39,8 @@ public class Customer implements Serializable {
 
     @Column(name = "active")
     private Boolean active;
+
+    @Column(name = "comment")
+    private String comment;
 
 }

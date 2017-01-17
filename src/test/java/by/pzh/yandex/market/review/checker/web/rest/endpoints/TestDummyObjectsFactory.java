@@ -1,6 +1,6 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
-import by.pzh.yandex.market.review.checker.domain.Customer;
+import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Report;
 import by.pzh.yandex.market.review.checker.domain.Store;
@@ -33,8 +33,8 @@ public final class TestDummyObjectsFactory {
                 .build();
     }
 
-    public static Customer getCustomer() {
-        return Customer.builder()
+    public static Client getCustomer() {
+        return Client.builder()
                 .active(Boolean.TRUE)
                 .email("test@emai.com")
                 .build();
