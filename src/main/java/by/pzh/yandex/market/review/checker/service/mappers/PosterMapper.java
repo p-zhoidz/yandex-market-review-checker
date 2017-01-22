@@ -38,7 +38,8 @@ public interface PosterMapper {
      * @return instance of the {@link Poster}.
      */
     @Named("posterDTOToPoster")
-    Poster posterDTOToPoster(PosterDTO posterDTO);
+    @Mapping(target = "id", expression = "java(id)")
+    Poster posterDTOToPoster(Long id, PosterDTO posterDTO);
 
 
     /**
