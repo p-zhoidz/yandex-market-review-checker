@@ -45,7 +45,7 @@ public class ExceptionTranslator {
      * @return User friendly {@link ErrorDTO}.
      */
     @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
     public ErrorDTO processEntityNotFoundExceptio(EntityNotFoundException ex) {
         return new ErrorDTO(ErrorConstants.ERR_ENTITY_NOT_FOUND);

@@ -4,6 +4,9 @@ import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.StoreMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +14,8 @@ import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static by.pzh.yandex.market.review.checker.repository.specifications.StoreSpecifications.forOwner;
 
 /**
  * Service Implementation for managing Store.
@@ -39,9 +44,9 @@ public class StoreService {
      * @param storeDTO the entity to save
      * @return the persisted entity
      */
-    public StoreDTO create(StoreDTO storeDTO) {
-        Store store = storeMapper.storeDTOToNewStore(storeDTO);
-        return save(store);
+    public Store create(Long clientId, StoreDTO storeDTO) {
+        Store store = storeMapper.storeDTOToStore(clientId, storeDTO);
+        return storeRepository.save(store);
     }
 
     /**
@@ -50,9 +55,9 @@ public class StoreService {
      * @param storeDTO the entity to save
      * @return the persisted entity
      */
-    public StoreDTO update(StoreDTO storeDTO) {
-        Store store = storeMapper.storeDTOToStore(storeDTO);
-        return save(store);
+    public Store update(Long id, Long ownerId, StoreDTO storeDTO) {
+        Store store = storeMapper.storeDTOToStore(id, ownerId, storeDTO);
+        return storeRepository.save(store);
     }
 
     /**
@@ -67,6 +72,15 @@ public class StoreService {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
+
+    @Transactional(readOnly = true)
+    public Page<Store> getCustomerStores(long ownerId, int page, int size) {
+        PageRequest pageRequest = new PageRequest(page, size);
+        Specifications<Store> spec = Specifications.where(forOwner(ownerId));
+
+        return storeRepository.findAll(spec, pageRequest);
+    }
+
     /**
      * Get one store by id.
      *
@@ -74,9 +88,8 @@ public class StoreService {
      * @return the entity
      */
     @Transactional(readOnly = true)
-    public StoreDTO findOne(Long id) {
-        Store store = storeRepository.findOne(id);
-        return storeMapper.storeToStoreDTO(store);
+    public Store findOne(Long id) {
+        return storeRepository.findOne(id);
     }
 
     /**

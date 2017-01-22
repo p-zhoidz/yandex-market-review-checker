@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.domain;
 
 
+import by.pzh.yandex.market.review.checker.domain.features.AbstractAuditingEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +10,7 @@ import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,7 +29,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "owner")
-public class Store implements Serializable {
+public class Store extends AbstractAuditingEntity implements  Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -37,7 +39,7 @@ public class Store implements Serializable {
 
     @NotNull
     @Column(name = "store_url", nullable = false)
-    private String storeUrl;
+    private String url;
 
     @Column(name = "active")
     private Boolean active;
@@ -46,7 +48,7 @@ public class Store implements Serializable {
     @Column(name = "desired_reviews_number", nullable = false)
     private Integer desiredReviewsNumber;
 
-    @ManyToOne
-    private Customer owner;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Client owner;
 
 }

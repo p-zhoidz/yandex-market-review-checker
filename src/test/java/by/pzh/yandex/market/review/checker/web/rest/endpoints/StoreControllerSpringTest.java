@@ -1,19 +1,21 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
-import by.pzh.yandex.market.review.checker.domain.Customer;
+import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.impl.StoreService;
 import by.pzh.yandex.market.review.checker.service.mappers.StoreMapper;
+import by.pzh.yandex.market.review.checker.web.rest.assemblers.StoreResourceAssembler;
+import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -27,6 +29,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -69,6 +72,12 @@ public class StoreControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
+    private StoreResourceAssembler storeResourceAssembler;
+
+    @Inject
+    private ExceptionTranslator exceptionTranslator;
+
+    @Inject
     private EntityManager em;
 
     private MockMvc restStoreMockMvc;
@@ -80,7 +89,9 @@ public class StoreControllerSpringTest {
         MockitoAnnotations.initMocks(this);
         StoreController storeResource = new StoreController();
         ReflectionTestUtils.setField(storeResource, "storeService", storeService);
+        ReflectionTestUtils.setField(storeResource, "storeResourceAssembler", storeResourceAssembler);
         this.restStoreMockMvc = MockMvcBuilders.standaloneSetup(storeResource)
+                .setControllerAdvice(exceptionTranslator)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
     }
@@ -92,12 +103,12 @@ public class StoreControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Store createEntity(EntityManager em) {
-        Customer customer = TestDummyObjectsFactory.getCustomer();
-        em.persist(customer);
+        Client client = TestDummyObjectsFactory.getCustomer();
+        em.persist(client);
 
         Store store = Store.builder()
-                .owner(customer)
-                .storeUrl(DEFAULT_STORE_URL)
+                .owner(client)
+                .url(DEFAULT_STORE_URL)
                 .active(DEFAULT_ACTIVE)
                 .desiredReviewsNumber(DEFAULT_DESIRED_REVIEWS_NUMBER)
                 .build();
@@ -117,7 +128,7 @@ public class StoreControllerSpringTest {
         // Create the Store
         StoreDTO storeDTO = storeMapper.storeToStoreDTO(store);
 
-        restStoreMockMvc.perform(post("/api/stores")
+        restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
                 .andExpect(status().isCreated());
@@ -126,30 +137,9 @@ public class StoreControllerSpringTest {
         List<Store> storeList = storeRepository.findAll();
         assertThat(storeList).hasSize(databaseSizeBeforeCreate + 1);
         Store testStore = storeList.get(storeList.size() - 1);
-        assertThat(testStore.getStoreUrl()).isEqualTo(DEFAULT_STORE_URL);
+        assertThat(testStore.getUrl()).isEqualTo(DEFAULT_STORE_URL);
         assertThat(testStore.getActive()).isEqualTo(DEFAULT_ACTIVE);
         assertThat(testStore.getDesiredReviewsNumber()).isEqualTo(DEFAULT_DESIRED_REVIEWS_NUMBER);
-    }
-
-    @Test
-    @Transactional
-    public void createStoreWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = storeRepository.findAll().size();
-
-        // Create the Store with an existing ID
-        Store existingStore = new Store();
-        existingStore.setId(1L);
-        StoreDTO existingStoreDTO = storeMapper.storeToStoreDTO(existingStore);
-
-        // An entity with an existing ID cannot be created, so this API call must fail
-        restStoreMockMvc.perform(post("/api/stores")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(existingStoreDTO)))
-                .andExpect(status().isBadRequest());
-
-        // Validate the Alice in the database
-        List<Store> storeList = storeRepository.findAll();
-        assertThat(storeList).hasSize(databaseSizeBeforeCreate);
     }
 
     @Test
@@ -157,15 +147,15 @@ public class StoreControllerSpringTest {
     public void checkStoreUrlIsRequired() throws Exception {
         int databaseSizeBeforeTest = storeRepository.findAll().size();
         // set the field null
-        store.setStoreUrl(null);
+        store.setUrl(null);
 
         // Create the Store, which fails.
         StoreDTO storeDTO = storeMapper.storeToStoreDTO(store);
 
-        restStoreMockMvc.perform(post("/api/stores")
+        restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Store> storeList = storeRepository.findAll();
         assertThat(storeList).hasSize(databaseSizeBeforeTest);
@@ -180,11 +170,10 @@ public class StoreControllerSpringTest {
 
         // Create the Store, which fails.
         StoreDTO storeDTO = storeMapper.storeToStoreDTO(store);
-
-        restStoreMockMvc.perform(post("/api/stores")
+        restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Store> storeList = storeRepository.findAll();
         assertThat(storeList).hasSize(databaseSizeBeforeTest);
@@ -192,18 +181,21 @@ public class StoreControllerSpringTest {
 
     @Test
     @Transactional
-    public void getAllStores() throws Exception {
+    public void getClientStores() throws Exception {
         // Initialize the database
         storeRepository.saveAndFlush(store);
 
         // Get all the storeList
-        restStoreMockMvc.perform(get("/api/stores?sort=id,desc"))
+        restStoreMockMvc.perform(get("/api/clients/{client-id}/stores", store.getOwner().getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(store.getId().intValue())))
-                .andExpect(jsonPath("$.[*].storeUrl").value(hasItem(DEFAULT_STORE_URL.toString())))
-                .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
-                .andExpect(jsonPath("$.[*].desiredReviewsNumber").value(hasItem(DEFAULT_DESIRED_REVIEWS_NUMBER)));
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").value(hasSize(1)))
+                .andExpect(jsonPath("$.content.[*].number").value(hasItem(store.getId().intValue())))
+                .andExpect(jsonPath("$.content.[*].url").value(hasItem(DEFAULT_STORE_URL.toString())))
+                .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
+                .andExpect(jsonPath("$.content.[*].desiredReviewsNumber").value(hasItem(DEFAULT_DESIRED_REVIEWS_NUMBER)))
+                .andExpect(jsonPath("$.content.[*].created").value(store.getCreated().toString()));
     }
 
     @Test
@@ -213,13 +205,15 @@ public class StoreControllerSpringTest {
         storeRepository.saveAndFlush(store);
 
         // Get the store
-        restStoreMockMvc.perform(get("/api/stores/{id}", store.getId()))
+        restStoreMockMvc.perform(get("/api/clients/{client-id}/stores/{id}",
+                store.getOwner().getId(), store.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.id").value(store.getId().intValue()))
-                .andExpect(jsonPath("$.storeUrl").value(DEFAULT_STORE_URL.toString()))
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                .andExpect(jsonPath("$.number").value(store.getId().intValue()))
+                .andExpect(jsonPath("$.url").value(DEFAULT_STORE_URL.toString()))
                 .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE.booleanValue()))
-                .andExpect(jsonPath("$.desiredReviewsNumber").value(DEFAULT_DESIRED_REVIEWS_NUMBER));
+                .andExpect(jsonPath("$.desiredReviewsNumber").value(DEFAULT_DESIRED_REVIEWS_NUMBER))
+                .andExpect(jsonPath("$.created").value(store.getCreated().toString()));
     }
 
     @Test
@@ -239,12 +233,13 @@ public class StoreControllerSpringTest {
 
         // Update the store
         Store updatedStore = storeRepository.findOne(store.getId());
-        updatedStore.setStoreUrl(UPDATED_STORE_URL);
+        updatedStore.setUrl(UPDATED_STORE_URL);
         updatedStore.setActive(UPDATED_ACTIVE);
         updatedStore.setDesiredReviewsNumber(UPDATED_DESIRED_REVIEWS_NUMBER);
         StoreDTO storeDTO = storeMapper.storeToStoreDTO(updatedStore);
 
-        restStoreMockMvc.perform(put("/api/stores")
+        restStoreMockMvc.perform(put("/api/clients/{client-id}/stores/{id}",
+                store.getOwner().getId(), store.getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
                 .andExpect(status().isOk());
@@ -253,28 +248,9 @@ public class StoreControllerSpringTest {
         List<Store> storeList = storeRepository.findAll();
         assertThat(storeList).hasSize(databaseSizeBeforeUpdate);
         Store testStore = storeList.get(storeList.size() - 1);
-        assertThat(testStore.getStoreUrl()).isEqualTo(UPDATED_STORE_URL);
+        assertThat(testStore.getUrl()).isEqualTo(UPDATED_STORE_URL);
         assertThat(testStore.getActive()).isEqualTo(UPDATED_ACTIVE);
         assertThat(testStore.getDesiredReviewsNumber()).isEqualTo(UPDATED_DESIRED_REVIEWS_NUMBER);
-    }
-
-    @Test
-    @Transactional
-    public void updateNonExistingStore() throws Exception {
-        int databaseSizeBeforeUpdate = storeRepository.findAll().size();
-
-        // Create the Store
-        StoreDTO storeDTO = storeMapper.storeToStoreDTO(store);
-
-        // If the entity doesn't have an ID, it will be created instead of just being updated
-        restStoreMockMvc.perform(put("/api/stores")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isCreated());
-
-        // Validate the Store in the database
-        List<Store> storeList = storeRepository.findAll();
-        assertThat(storeList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
@@ -285,7 +261,8 @@ public class StoreControllerSpringTest {
         int databaseSizeBeforeDelete = storeRepository.findAll().size();
 
         // Get the store
-        restStoreMockMvc.perform(delete("/api/stores/{id}", store.getId())
+        restStoreMockMvc.perform(delete("/api/clients/{client-id}/stores/{id}",
+                store.getOwner().getId(), store.getId())
                 .accept(TestUtil.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk());
 

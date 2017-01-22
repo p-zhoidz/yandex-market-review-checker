@@ -1,6 +1,6 @@
 package by.pzh.yandex.market.review.checker.service.mappers;
 
-import by.pzh.yandex.market.review.checker.domain.Customer;
+import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import org.mapstruct.IterableMapping;
@@ -51,30 +51,26 @@ public interface StoreMapper {
      * @return instance of the {@link Store}.
      */
     @IterableMapping(qualifiedByName = "storeDTOToStore")
-    @Mapping(source = "ownerId", target = "owner")
-    @Mapping(target = "id", ignore = true)
-    Store storeDTOToNewStore(StoreDTO storeDTO);
+    @Mapping(target = "owner", expression = "java(clientFromId(clientId))")
+    Store storeDTOToStore(Long clientId, StoreDTO storeDTO);
+
+    @Mapping(target = "owner", expression = "java(clientFromId(clientId))")
+    @Mapping(target = "id", expression = "java(id)")
+    Store storeDTOToStore(Long id, Long clientId, StoreDTO storeDTO);
+
 
     /**
-     * Map list of {@link StoreDTO} to list of {@link Store}.
-     *
-     * @param storeDTOs list of entities to be mapped.
-     * @return list of {@link Store}.
-     */
-    List<Store> storeDTOsToStores(List<StoreDTO> storeDTOs);
-
-    /**
-     * Generate {@link Customer} based on id.
+     * Generate {@link Client} based on id.
      *
      * @param id Identifier.
-     * @return {@link Customer}.
+     * @return {@link Client}.
      */
-    default Customer customerFromId(Long id) {
+    default Client clientFromId(Long id) {
         if (id == null) {
             return null;
         }
-        Customer customer = new Customer();
-        customer.setId(id);
-        return customer;
+        Client client = new Client();
+        client.setId(id);
+        return client;
     }
 }
