@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -40,6 +41,7 @@ public class Client extends AbstractAuditingEntity implements Serializable {
     @Column(name = "active")
     private Boolean active;
 
+    @Lob
     @Column(name = "comment")
     private String comment;
 

@@ -1,7 +1,10 @@
 
 package by.pzh.yandex.market.review.checker.service.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -13,6 +16,9 @@ import java.time.LocalDate;
  */
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientDTO implements Serializable {
 
     private Long number;
@@ -20,7 +26,7 @@ public class ClientDTO implements Serializable {
     private String email;
     @NotNull
     private Boolean active;
-    private LocalDate creationDate;
+    private LocalDate created;
     private String comment;
 }
 

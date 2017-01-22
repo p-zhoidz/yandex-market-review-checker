@@ -51,17 +51,13 @@ public interface StoreMapper {
      * @return instance of the {@link Store}.
      */
     @IterableMapping(qualifiedByName = "storeDTOToStore")
-    @Mapping(source = "ownerId", target = "owner")
-    @Mapping(target = "id", ignore = true)
-    Store storeDTOToNewStore(StoreDTO storeDTO);
+    @Mapping(target = "owner", expression = "java(clientFromId(clientId))")
+    Store storeDTOToStore(Long clientId, StoreDTO storeDTO);
 
-    /**
-     * Map list of {@link StoreDTO} to list of {@link Store}.
-     *
-     * @param storeDTOs list of entities to be mapped.
-     * @return list of {@link Store}.
-     */
-    List<Store> storeDTOsToStores(List<StoreDTO> storeDTOs);
+    @Mapping(target = "owner", expression = "java(clientFromId(clientId))")
+    @Mapping(target = "id", expression = "java(id)")
+    Store storeDTOToStore(Long id, Long clientId, StoreDTO storeDTO);
+
 
     /**
      * Generate {@link Client} based on id.
@@ -69,7 +65,7 @@ public interface StoreMapper {
      * @param id Identifier.
      * @return {@link Client}.
      */
-    default Client customerFromId(Long id) {
+    default Client clientFromId(Long id) {
         if (id == null) {
             return null;
         }

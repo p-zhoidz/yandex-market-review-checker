@@ -50,7 +50,7 @@ public final class TestDummyObjectsFactory {
 
     public static Store getStore() {
         return Store.builder()
-                .storeUrl("url")
+                .url("url")
                 .active(Boolean.TRUE)
                 .desiredReviewsNumber(3)
                 .owner(getCustomer())

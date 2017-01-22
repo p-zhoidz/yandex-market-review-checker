@@ -65,14 +65,6 @@ public class ClientService {
     public Page<Client> getClients(int page, int size) {
         Pageable pageable = new PageRequest(page, size);
         return clientRepository.findAll(pageable);
-                //.map(clientMapper::clientToClientDTO);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<Client> getClientss(int page, int size) {
-        Pageable pageable = new PageRequest(page, size);
-        return clientRepository.findAll(pageable);
-        //.map(clientMapper::clientToClientDTO);
     }
 
     /**

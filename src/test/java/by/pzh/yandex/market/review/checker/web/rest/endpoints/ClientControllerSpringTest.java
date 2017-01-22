@@ -5,13 +5,15 @@ import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.repository.ClientRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ClientDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ClientService;
-import by.pzh.yandex.market.review.checker.service.mappers.ClientMapper;
+import by.pzh.yandex.market.review.checker.web.rest.assemblers.ClientResourceAssembler;
+import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -27,6 +29,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasValue;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,11 +56,14 @@ public class ClientControllerSpringTest {
     private static final Boolean DEFAULT_ACTIVE = false;
     private static final Boolean UPDATED_ACTIVE = true;
 
-    @Inject
-    private ClientRepository clientRepository;
+    private static final String DEFAULT_COMMENT = "Comment";
+    private static final String UPDATED_COMMENT = "Updated Comment";
 
     @Inject
-    private ClientMapper clientMapper;
+    private ExceptionTranslator controllerAdvice;
+
+    @Inject
+    private ClientRepository clientRepository;
 
     @Inject
     private ClientService clientService;
@@ -66,9 +75,15 @@ public class ClientControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
+    private ClientResourceAssembler clientResourceAssembler;
+
+    @Inject
+    private PagedResourcesAssembler<Client> pagedAssembler;
+
+    @Inject
     private EntityManager em;
 
-    private MockMvc restCustomerMockMvc;
+    private MockMvc restClientMockMvc;
 
     private Client client;
 
@@ -77,7 +92,10 @@ public class ClientControllerSpringTest {
         MockitoAnnotations.initMocks(this);
         ClientController customerResource = new ClientController();
         ReflectionTestUtils.setField(customerResource, "clientService", clientService);
-        this.restCustomerMockMvc = MockMvcBuilders.standaloneSetup(customerResource)
+        ReflectionTestUtils.setField(customerResource, "clientResourceAssembler", clientResourceAssembler);
+        ReflectionTestUtils.setField(customerResource, "pagedAssembler", pagedAssembler);
+        this.restClientMockMvc = MockMvcBuilders.standaloneSetup(customerResource)
+                .setControllerAdvice(controllerAdvice)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
     }
@@ -92,6 +110,7 @@ public class ClientControllerSpringTest {
         Client client = Client.builder()
                 .email(DEFAULT_EMAIL)
                 .active(DEFAULT_ACTIVE)
+                .comment(DEFAULT_COMMENT)
                 .build();
         return client;
     }
@@ -101,69 +120,49 @@ public class ClientControllerSpringTest {
         client = createEntity(em);
     }
 
-    //FIXME
-/*    @Test
+    @Test
     @Transactional
-    public void createCustomer() throws Exception {
+    public void createClient() throws Exception {
         int databaseSizeBeforeCreate = clientRepository.findAll().size();
 
+        ClientDTO clientDTO = getClientDTO(client);
         // Create the Client
-        ClientDTO clientDTO = clientMapper.clientToClientDTO(client);
 
-        restCustomerMockMvc.perform(post("/api/clients")
+        restClientMockMvc.perform(post("/api/clients")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(clientDTO)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.number").value(notNullValue()))
+                .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
+                .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE))
+                .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT))
+                .andExpect(jsonPath("$.created").value(notNullValue()));
 
-        // Validate the Client in the database
         List<Client> clientList = clientRepository.findAll();
         assertThat(clientList).hasSize(databaseSizeBeforeCreate + 1);
         Client testClient = clientList.get(clientList.size() - 1);
         assertThat(testClient.getEmail()).isEqualTo(DEFAULT_EMAIL);
         assertThat(testClient.getActive()).isEqualTo(DEFAULT_ACTIVE);
-    }*/
+        assertThat(testClient.getComment()).isEqualTo(DEFAULT_COMMENT);
+        assertThat(testClient.getCreated()).isNotNull();
+    }
 
-    //FIXME
-/*    @Test
-    @Transactional
-    public void createCustomerWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = clientRepository.findAll().size();
-
-        // Create the Client with an existing ID
-        Client existingClient = new Client();
-        existingClient.setId(1L);
-        ClientDTO existingClientDTO = clientMapper.clientToClientDTO(existingClient);
-
-        // An entity with an existing ID cannot be created, so this API call must fail
-        restCustomerMockMvc.perform(post("/api/clients")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(existingClientDTO)))
-                .andExpect(status().isBadRequest());
-
-        // Validate the Alice in the database
-        List<Client> clientList = clientRepository.findAll();
-        assertThat(clientList).hasSize(databaseSizeBeforeCreate);
-    }*/
-
-//FIXME
-/*    @Test
+    @Test
     @Transactional
     public void checkEmailIsRequired() throws Exception {
         int databaseSizeBeforeTest = clientRepository.findAll().size();
-        // set the field null
-        client.setEmail(null);
 
-        // Create the Client, which fails.
-        ClientDTO clientDTO = clientMapper.clientToClientDTO(client);
+        ClientDTO clientDTO = getClientDTO(client);
+        clientDTO.setEmail(null);
 
-        restCustomerMockMvc.perform(post("/api/clients")
+        restClientMockMvc.perform(post("/api/clients")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(clientDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Client> clientList = clientRepository.findAll();
         assertThat(clientList).hasSize(databaseSizeBeforeTest);
-    }*/
+    }
 
     @Test
     @Transactional
@@ -172,45 +171,44 @@ public class ClientControllerSpringTest {
         clientRepository.saveAndFlush(client);
 
         // Get all the customerList
-        restCustomerMockMvc.perform(get("/api/clients?page=0"))
+        restClientMockMvc.perform(get("/api/clients?page=0"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.content.[*].id").isArray())
-                .andExpect(jsonPath("$.content.[*].id").value(hasSize(1)))
-                .andExpect(jsonPath("$.content.[*].id").value(hasItem(client.getId().intValue())))
-                .andExpect(jsonPath("$.content.[*].email").value(hasItem(DEFAULT_EMAIL.toString())))
-                .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
-                .andExpect(jsonPath("$.content.[0].links").isArray())
-                .andExpect(jsonPath("$.content.[0].links").value(hasSize(1)))
-                .andExpect(jsonPath("$.content.[0].links.[*].rel").value(hasItem("self")))
-                .andExpect(jsonPath("$.content.[0].links.[*].href").value(hasItem("http://localhost/api/clients/1")));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").value(hasSize(1)))
+                .andExpect(jsonPath("$.content.[*].number").value(hasItem(client.getId().intValue())))
+                .andExpect(jsonPath("$.content.[*].email").value(hasItem(DEFAULT_EMAIL)))
+                .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE)))
+                .andExpect(jsonPath("$.content.[*].comment").value(hasItem(DEFAULT_COMMENT)))
+                .andExpect(jsonPath("$.content.[*].created").value(client.getCreated().toString()));
+
     }
 
     @Test
     @Transactional
-    public void getCustomer() throws Exception {
+    public void getClient() throws Exception {
         // Initialize the database
         clientRepository.saveAndFlush(client);
 
         // Get the client
-        restCustomerMockMvc.perform(get("/api/clients/{id}", client.getId()))
+        restClientMockMvc.perform(get("/api/clients/{id}", client.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.id").value(client.getId().intValue()))
-                .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL.toString()))
-                .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE.booleanValue()));
+                .andExpect(jsonPath("$.number").value(client.getId()))
+                .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
+                .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE))
+                .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT))
+                .andExpect(jsonPath("$.created").value(client.getCreated().toString()));
     }
 
     @Test
     @Transactional
     public void getNonExistingCustomer() throws Exception {
         // Get the client
-        restCustomerMockMvc.perform(get("/api/clients/{id}", Long.MAX_VALUE))
+        restClientMockMvc.perform(get("/api/clients/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
     }
 
-    //FIXME
-/*    @Test
+    @Test
     @Transactional
     public void updateCustomer() throws Exception {
         // Initialize the database
@@ -221,11 +219,14 @@ public class ClientControllerSpringTest {
         Client updatedClient = clientRepository.findOne(client.getId());
         updatedClient.setEmail(UPDATED_EMAIL);
         updatedClient.setActive(UPDATED_ACTIVE);
-        ClientDTO clientDTO = clientMapper.clientToClientDTO(updatedClient);
+        updatedClient.setComment(UPDATED_COMMENT);
 
-        restCustomerMockMvc.perform(put("/api/clients")
+
+        ClientDTO updatedClientDTO = getClientDTO(updatedClient);
+
+        restClientMockMvc.perform(put("/api/clients/{id}", client.getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(clientDTO)))
+                .content(TestUtil.convertObjectToJsonBytes(updatedClientDTO)))
                 .andExpect(status().isOk());
 
         // Validate the Client in the database
@@ -234,27 +235,10 @@ public class ClientControllerSpringTest {
         Client testClient = clientList.get(clientList.size() - 1);
         assertThat(testClient.getEmail()).isEqualTo(UPDATED_EMAIL);
         assertThat(testClient.getActive()).isEqualTo(UPDATED_ACTIVE);
-    }*/
+        assertThat(testClient.getComment()).isEqualTo(UPDATED_COMMENT);
+        assertThat(testClient.getCreated()).isEqualTo(client.getCreated());
+    }
 
-//FIXME
-/*    @Test
-    @Transactional
-    public void updateNonExistingCustomer() throws Exception {
-        int databaseSizeBeforeUpdate = clientRepository.findAll().size();
-
-        // Create the Client
-        ClientDTO clientDTO = clientMapper.clientToClientDTO(client);
-
-        // If the entity doesn't have an ID, it will be created instead of just being updated
-        restCustomerMockMvc.perform(put("/api/clients")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(clientDTO)))
-                .andExpect(status().isCreated());
-
-        // Validate the Client in the database
-        List<Client> clientList = clientRepository.findAll();
-        assertThat(clientList).hasSize(databaseSizeBeforeUpdate + 1);
-    }*/
 
     @Test
     @Transactional
@@ -264,12 +248,22 @@ public class ClientControllerSpringTest {
         int databaseSizeBeforeDelete = clientRepository.findAll().size();
 
         // Get the client
-        restCustomerMockMvc.perform(delete("/api/clients/{id}", client.getId())
+        restClientMockMvc.perform(delete("/api/clients/{id}", client.getId())
                 .accept(TestUtil.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk());
 
         // Validate the database is empty
         List<Client> clientList = clientRepository.findAll();
         assertThat(clientList).hasSize(databaseSizeBeforeDelete - 1);
+    }
+
+    private ClientDTO getClientDTO(Client client) {
+        return ClientDTO.builder()
+                .active(client.getActive())
+                .comment(client.getComment())
+                .created(client.getCreated())
+                .email(client.getEmail())
+                .number(client.getId())
+                .build();
     }
 }

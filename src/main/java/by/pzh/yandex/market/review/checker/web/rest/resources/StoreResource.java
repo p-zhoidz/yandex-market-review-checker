@@ -8,11 +8,10 @@ import java.time.LocalDate;
  * @author p.zhoidz.
  */
 @Data
-public class ClientResource extends CustomBaseResourceSupport {
-    private String email;
+public class StoreResource extends CustomBaseResourceSupport {
+    private String url;
     private Boolean active;
-    private String comment;
+    private Integer desiredReviewsNumber;
     private Long number;
     private LocalDate created;
-
 }

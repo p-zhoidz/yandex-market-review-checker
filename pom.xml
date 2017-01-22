@@ -257,9 +257,6 @@
             <testResource>
                 <directory>src/test/resources/</directory>
             </testResource>
-            <testResource>
-                <directory>src/test/features</directory>
-            </testResource>
         </testResources>
 
         <plugins>
@@ -356,6 +353,39 @@
                                 </resource>
                                 <resource>
                                     <directory>src/main/resources/</directory>
+                                    <filtering>false</filtering>
+                                    <excludes>
+                                        <exclude>**/*.xml</exclude>
+                                        <exclude>**/*.yml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>test-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/test-classes</outputDirectory>
+                            <useDefaultDelimiters>false</useDefaultDelimiters>
+                            <delimiters>
+                                <delimiter>#</delimiter>
+                            </delimiters>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.xml</include>
+                                        <include>**/*.yml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/test/resources/</directory>
                                     <filtering>false</filtering>
                                     <excludes>
                                         <exclude>**/*.xml</exclude>

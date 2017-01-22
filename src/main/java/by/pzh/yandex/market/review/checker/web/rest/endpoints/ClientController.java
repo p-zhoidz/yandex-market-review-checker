@@ -1,5 +1,6 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
+import by.pzh.yandex.market.review.checker.commons.exceptions.EntityNotFoundException;
 import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.service.dto.ClientDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ClientService;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * REST controller for managing Client.
@@ -38,17 +40,18 @@ public class ClientController {
     @Inject
     private ClientService clientService;
 
+    @Inject
+    private PagedResourcesAssembler<Client> pagedAssembler;
+
     /**
      * POST  /customers : Create a new customer.
      *
      * @param clientDTO the clientDTO to create
      * @return the ResponseEntity with status 201 (Created) and with body the new clientDTO,
      * or with status 422 (Bad Request) if the customer DTO is not valid.
-     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/clients")
-    public ResponseEntity<ClientResource> createClient(@Valid @RequestBody ClientDTO clientDTO)
-            throws URISyntaxException {
+    public ResponseEntity<ClientResource> createClient(@Valid @RequestBody ClientDTO clientDTO) {
         Client client = clientService.create(clientDTO);
         ClientResource resource = clientResourceAssembler.toResource(client);
         return ResponseEntity.status(HttpStatus.CREATED).body(resource);
@@ -65,9 +68,7 @@ public class ClientController {
      */
     @PutMapping("/clients/{id}")
     public ResponseEntity<ClientResource> updateClient(@PathVariable Long id,
-                                                       @Valid @RequestBody ClientDTO clientDTO)
-            throws URISyntaxException {
-
+                                                       @Valid @RequestBody ClientDTO clientDTO) {
         Client client = clientService.update(id, clientDTO);
         ClientResource resource = clientResourceAssembler.toResource(client);
 
@@ -81,8 +82,8 @@ public class ClientController {
      * @return the ResponseEntity with status 200 (OK) and the list of customers in body
      */
     @RequestMapping(value = "/clients", method = RequestMethod.GET)
-    PagedResources<ClientResource> getClients(@PageableDefault Pageable p, PagedResourcesAssembler<Client> pagedAssembler) {
-        Page<Client> clients = clientService.getClientss(p.getPageNumber(), p.getPageSize());
+    PagedResources<ClientResource> getClients(@PageableDefault Pageable p) {
+        Page<Client> clients = clientService.getClients(p.getPageNumber(), p.getPageSize());
         return pagedAssembler.toResource(clients, clientResourceAssembler);
     }
 
@@ -95,19 +96,11 @@ public class ClientController {
     @RequestMapping(method = RequestMethod.GET, value = "/clients/{id}")
     public ResponseEntity<ClientResource> getClient(@PathVariable Long id) {
         Client client = clientService.findOne(id);
-
-        ClientResource resource = clientResourceAssembler.toResource(client);
-        return ResponseEntity.ok(resource);
-
-/*
-        Optional<Resource<Client>> clientDTOResource = Optional.ofNullable(client)
-                .map(dto -> new Resource<>(
-                        client,
-                        linkTo(methodOn(ClientController.class).getClient(dto.getId())).withSelfRel()));
-
-        return clientDTOResource
-                .map(result ->)
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));*/
+        return Optional.ofNullable(client).map(c -> {
+            ClientResource resource = clientResourceAssembler.toResource(client);
+            return ResponseEntity.ok(resource);
+        }).orElseThrow(() -> new EntityNotFoundException(Client.class,
+                String.format("client with id %s not found", id)));
     }
 
     /**

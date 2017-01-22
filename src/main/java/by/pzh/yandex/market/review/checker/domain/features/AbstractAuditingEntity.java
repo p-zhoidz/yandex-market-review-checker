@@ -21,5 +21,5 @@ public abstract class AbstractAuditingEntity {
 
     @CreatedDate
     @Column(name = "creation_date", updatable = false)
-    private LocalDate creationDate;
+    protected LocalDate created;
 }

@@ -25,11 +25,11 @@ public class ClientResourceAssembler extends ResourceAssemblerSupport<Client, Cl
     @Override
     public ClientResource toResource(Client entity) {
         ClientResource clientResource = new ClientResource();
+        clientResource.setNumber(entity.getId());
         clientResource.setActive(entity.getActive());
         clientResource.setEmail(entity.getEmail());
         clientResource.setComment(entity.getComment());
-        clientResource.setCreationDate(entity.getCreationDate());
-        clientResource.setComment(entity.getComment());
+        clientResource.setCreated(entity.getCreated());
         clientResource.add(linkTo(methodOn(ClientController.class).getClient(entity.getId())).withSelfRel());
         clientResource.add(linkTo(methodOn(StoreController.class)
                 .getClientStores(entity.getId(), new PageRequest(0, 20))).withRel("stores"));

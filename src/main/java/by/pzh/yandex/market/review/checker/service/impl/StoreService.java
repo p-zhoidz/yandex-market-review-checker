@@ -44,9 +44,9 @@ public class StoreService {
      * @param storeDTO the entity to save
      * @return the persisted entity
      */
-    public StoreDTO create(StoreDTO storeDTO) {
-        Store store = storeMapper.storeDTOToNewStore(storeDTO);
-        return save(store);
+    public Store create(Long clientId, StoreDTO storeDTO) {
+        Store store = storeMapper.storeDTOToStore(clientId, storeDTO);
+        return storeRepository.save(store);
     }
 
     /**
@@ -55,9 +55,9 @@ public class StoreService {
      * @param storeDTO the entity to save
      * @return the persisted entity
      */
-    public StoreDTO update(StoreDTO storeDTO) {
-        Store store = storeMapper.storeDTOToStore(storeDTO);
-        return save(store);
+    public Store update(Long id, Long ownerId, StoreDTO storeDTO) {
+        Store store = storeMapper.storeDTOToStore(id, ownerId, storeDTO);
+        return storeRepository.save(store);
     }
 
     /**
@@ -74,12 +74,11 @@ public class StoreService {
 
 
     @Transactional(readOnly = true)
-    public Page<StoreDTO> getCustomerStores(long ownerId, int page, int size) {
+    public Page<Store> getCustomerStores(long ownerId, int page, int size) {
         PageRequest pageRequest = new PageRequest(page, size);
         Specifications<Store> spec = Specifications.where(forOwner(ownerId));
 
-        return storeRepository.findAll(spec, pageRequest)
-                .map(storeMapper::storeToStoreDTO);
+        return storeRepository.findAll(spec, pageRequest);
     }
 
     /**
@@ -89,9 +88,8 @@ public class StoreService {
      * @return the entity
      */
     @Transactional(readOnly = true)
-    public StoreDTO findOne(Long id) {
-        Store store = storeRepository.findOne(id);
-        return storeMapper.storeToStoreDTO(store);
+    public Store findOne(Long id) {
+        return storeRepository.findOne(id);
     }
 
     /**
