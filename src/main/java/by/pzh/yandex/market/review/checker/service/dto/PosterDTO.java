@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 
 /**
@@ -18,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class PosterDTO implements Serializable {
 
-    private Long id;
+    private Long number;
 
     @NotNull
     private String email;
@@ -33,5 +34,7 @@ public class PosterDTO implements Serializable {
     private Integer capacity;
 
     private Boolean active;
+
+    private LocalDate created;
 
 }

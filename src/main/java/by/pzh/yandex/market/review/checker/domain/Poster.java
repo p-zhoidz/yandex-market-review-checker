@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.domain;
 
 
+import by.pzh.yandex.market.review.checker.domain.features.AbstractAuditingEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +25,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Poster implements Serializable {
+public class Poster extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

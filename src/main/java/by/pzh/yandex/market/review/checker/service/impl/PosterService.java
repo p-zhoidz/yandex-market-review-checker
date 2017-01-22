@@ -4,13 +4,13 @@ import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.repository.PosterRepository;
 import by.pzh.yandex.market.review.checker.service.dto.PosterDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.PosterMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing Poster.
@@ -39,9 +39,9 @@ public class PosterService {
      * @param posterDTO the entity to save
      * @return the persisted entity
      */
-    public PosterDTO update(PosterDTO posterDTO) {
-        Poster poster = posterMapper.posterDTOToPoster(posterDTO);
-        return save(poster);
+    public Poster update(Long id, PosterDTO posterDTO) {
+        Poster poster = posterMapper.posterDTOToPoster(id, posterDTO);
+        return posterRepository.save(poster);
     }
 
     /**
@@ -50,23 +50,15 @@ public class PosterService {
      * @param posterDTO the entity to save
      * @return the persisted entity
      */
-    public PosterDTO create(PosterDTO posterDTO) {
+    public Poster create(PosterDTO posterDTO) {
         Poster poster = posterMapper.posterDTOToNewPoster(posterDTO);
-        return save(poster);
+        return posterRepository.save(poster);
     }
 
-    /**
-     * Get all the posters.
-     *
-     * @return the list of entities
-     */
     @Transactional(readOnly = true)
-    public List<PosterDTO> findAll() {
-        List<PosterDTO> result = posterRepository.findAll().stream()
-                .map(posterMapper::posterToPosterDTO)
-                .collect(Collectors.toCollection(LinkedList::new));
-
-        return result;
+    public Page<Poster> getPosters(int page, int size) {
+        Pageable pageable = new PageRequest(page, size);
+        return posterRepository.findAll(pageable);
     }
 
     /**
@@ -76,10 +68,8 @@ public class PosterService {
      * @return the entity
      */
     @Transactional(readOnly = true)
-    public PosterDTO findOne(Long id) {
-        Poster poster = posterRepository.findOne(id);
-        PosterDTO posterDTO = posterMapper.posterToPosterDTO(poster);
-        return posterDTO;
+    public Poster findOne(Long id) {
+        return posterRepository.findOne(id);
     }
 
     /**
@@ -91,14 +81,4 @@ public class PosterService {
         posterRepository.delete(id);
     }
 
-    /**
-     * Save a poster.
-     *
-     * @param poster the entity to save
-     * @return the persisted entity
-     */
-    private PosterDTO save(Poster poster) {
-        poster = posterRepository.save(poster);
-        return posterMapper.posterToPosterDTO(poster);
-    }
 }

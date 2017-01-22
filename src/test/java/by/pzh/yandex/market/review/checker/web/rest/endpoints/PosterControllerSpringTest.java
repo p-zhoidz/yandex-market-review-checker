@@ -6,12 +6,17 @@ import by.pzh.yandex.market.review.checker.repository.PosterRepository;
 import by.pzh.yandex.market.review.checker.service.dto.PosterDTO;
 import by.pzh.yandex.market.review.checker.service.impl.PosterService;
 import by.pzh.yandex.market.review.checker.service.mappers.PosterMapper;
+import by.pzh.yandex.market.review.checker.web.rest.assemblers.PosterResourceAssembler;
+import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
+import by.pzh.yandex.market.review.checker.web.rest.resources.PosterResource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -26,6 +31,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -74,6 +80,15 @@ public class PosterControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
+    private PosterResourceAssembler posterResourceAssembler;
+
+    @Inject
+    private PagedResourcesAssembler<PosterResource> pagedAssembler;
+
+    @Inject
+    private ExceptionTranslator exceptionTranslator;
+
+    @Inject
     private EntityManager em;
 
     private MockMvc restPosterMockMvc;
@@ -85,9 +100,14 @@ public class PosterControllerSpringTest {
         MockitoAnnotations.initMocks(this);
         PosterController posterResource = new PosterController();
         ReflectionTestUtils.setField(posterResource, "posterService", posterService);
+        ReflectionTestUtils.setField(posterResource, "posterResourceAssembler", posterResourceAssembler);
+        ReflectionTestUtils.setField(posterResource, "pagedAssembler", pagedAssembler);
+
         this.restPosterMockMvc = MockMvcBuilders.standaloneSetup(posterResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
-                .setMessageConverters(jacksonMessageConverter).build();
+                .setMessageConverters(jacksonMessageConverter)
+                .setControllerAdvice(exceptionTranslator)
+                .build();
     }
 
     /**
@@ -138,27 +158,6 @@ public class PosterControllerSpringTest {
 
     @Test
     @Transactional
-    public void createPosterWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = posterRepository.findAll().size();
-
-        // Create the Poster with an existing ID
-        Poster existingPoster = new Poster();
-        existingPoster.setId(1L);
-        PosterDTO existingPosterDTO = posterMapper.posterToPosterDTO(existingPoster);
-
-        // An entity with an existing ID cannot be created, so this API call must fail
-        restPosterMockMvc.perform(post("/api/posters")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(existingPosterDTO)))
-                .andExpect(status().isBadRequest());
-
-        // Validate the Alice in the database
-        List<Poster> posterList = posterRepository.findAll();
-        assertThat(posterList).hasSize(databaseSizeBeforeCreate);
-    }
-
-    @Test
-    @Transactional
     public void checkEmailIsRequired() throws Exception {
         int databaseSizeBeforeTest = posterRepository.findAll().size();
         // set the field null
@@ -170,7 +169,7 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -189,7 +188,7 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -208,7 +207,7 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -227,7 +226,7 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -240,15 +239,17 @@ public class PosterControllerSpringTest {
         posterRepository.saveAndFlush(poster);
 
         // Get all the posterList
-        restPosterMockMvc.perform(get("/api/posters?sort=id,desc"))
+        restPosterMockMvc.perform(get("/api/posters"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(poster.getId().intValue())))
-                .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL.toString())))
-                .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME.toString())))
-                .andExpect(jsonPath("$.[*].rate").value(hasItem(DEFAULT_RATE.doubleValue())))
-                .andExpect(jsonPath("$.[*].capacity").value(hasItem(DEFAULT_CAPACITY)))
-                .andExpect(jsonPath("$.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())));
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").value(hasSize(1)))
+                .andExpect(jsonPath("$.content.[*].number").value(hasItem(poster.getId().intValue())))
+                .andExpect(jsonPath("$.content.[*].email").value(hasItem(DEFAULT_EMAIL.toString())))
+                .andExpect(jsonPath("$.content.[*].name").value(hasItem(DEFAULT_NAME.toString())))
+                .andExpect(jsonPath("$.content.[*].rate").value(hasItem(DEFAULT_RATE.doubleValue())))
+                .andExpect(jsonPath("$.content.[*].capacity").value(hasItem(DEFAULT_CAPACITY)))
+                .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())));
     }
 
     @Test
@@ -260,8 +261,8 @@ public class PosterControllerSpringTest {
         // Get the poster
         restPosterMockMvc.perform(get("/api/posters/{id}", poster.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.id").value(poster.getId().intValue()))
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                .andExpect(jsonPath("$.number").value(poster.getId().intValue()))
                 .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL.toString()))
                 .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
                 .andExpect(jsonPath("$.rate").value(DEFAULT_RATE.doubleValue()))
@@ -293,7 +294,7 @@ public class PosterControllerSpringTest {
         updatedPoster.setActive(UPDATED_ACTIVE);
         PosterDTO posterDTO = posterMapper.posterToPosterDTO(updatedPoster);
 
-        restPosterMockMvc.perform(put("/api/posters")
+        restPosterMockMvc.perform(put("/api/posters/{id}", updatedPoster.getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
                 .andExpect(status().isOk());
@@ -307,25 +308,6 @@ public class PosterControllerSpringTest {
         assertThat(testPoster.getRate()).isEqualTo(UPDATED_RATE);
         assertThat(testPoster.getCapacity()).isEqualTo(UPDATED_CAPACITY);
         assertThat(testPoster.getActive()).isEqualTo(UPDATED_ACTIVE);
-    }
-
-    @Test
-    @Transactional
-    public void updateNonExistingPoster() throws Exception {
-        int databaseSizeBeforeUpdate = posterRepository.findAll().size();
-
-        // Create the Poster
-        PosterDTO posterDTO = posterMapper.posterToPosterDTO(poster);
-
-        // If the entity doesn't have an ID, it will be created instead of just being updated
-        restPosterMockMvc.perform(put("/api/posters")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isCreated());
-
-        // Validate the Poster in the database
-        List<Poster> posterList = posterRepository.findAll();
-        assertThat(posterList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
