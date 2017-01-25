@@ -21,4 +21,9 @@ public final class StoreSpecifications {
                         id);
     }
 
+    public static Specification<Store> filterActive() {
+        return (root, query, builder) ->
+                builder.isTrue(root.get(Store_.active));
+    }
+
 }

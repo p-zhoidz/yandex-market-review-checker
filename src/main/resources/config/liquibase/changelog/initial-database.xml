@@ -124,6 +124,10 @@
                 <constraints nullable="false"/>
             </column>
 
+            <!--//TODO add FK-->
+            <column name="task_entry_id" type="bigint">
+            </column>
+
         </createTable>
 
     </changeSet>
