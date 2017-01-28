@@ -31,7 +31,7 @@ public class PosterDTO implements Serializable {
     private Double rate;
 
     @NotNull
-    private Integer capacity;
+    private Integer velocity;
 
     private Boolean active;
 

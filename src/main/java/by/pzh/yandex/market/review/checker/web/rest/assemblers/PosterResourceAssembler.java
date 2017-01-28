@@ -29,7 +29,7 @@ public class PosterResourceAssembler extends ResourceAssemblerSupport<Poster, Po
                 .rate(entity.getRate())
                 .name(entity.getName())
                 .email(entity.getEmail())
-                .capacity(entity.getCapacity())
+                .velocity(entity.getVelocity())
                 .active(entity.getActive())
                 .created(entity.getCreated())
                 .number(entity.getId())

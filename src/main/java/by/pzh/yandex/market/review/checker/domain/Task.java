@@ -13,10 +13,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * A Task.
@@ -46,6 +48,9 @@ public class Task implements Serializable {
 
     @Column(name = "comment")
     private String comment;
+
+    @OneToMany(mappedBy = "task")
+    private List<TaskEntry> taskEntries;
 
     @ManyToOne
     private Poster poster;

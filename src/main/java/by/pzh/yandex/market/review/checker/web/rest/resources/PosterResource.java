@@ -15,7 +15,7 @@ public class PosterResource extends CustomBaseResourceSupport {
     private String email;
     private String name;
     private Double rate;
-    private Integer capacity;
+    private Integer velocity;
     private Boolean active;
     private LocalDate created;
 }

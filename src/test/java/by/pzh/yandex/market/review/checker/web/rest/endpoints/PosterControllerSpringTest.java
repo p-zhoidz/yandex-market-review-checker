@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -58,8 +57,8 @@ public class PosterControllerSpringTest {
     private static final Double DEFAULT_RATE = 1D;
     private static final Double UPDATED_RATE = 2D;
 
-    private static final Integer DEFAULT_CAPACITY = 1;
-    private static final Integer UPDATED_CAPACITY = 2;
+    private static final Integer DEFAULT_VELOCITY = 1;
+    private static final Integer UPDATED_VELOCITY = 2;
 
     private static final Boolean DEFAULT_ACTIVE = false;
     private static final Boolean UPDATED_ACTIVE = true;
@@ -121,7 +120,7 @@ public class PosterControllerSpringTest {
                 .email(DEFAULT_EMAIL)
                 .name(DEFAULT_NAME)
                 .rate(DEFAULT_RATE)
-                .capacity(DEFAULT_CAPACITY)
+                .velocity(DEFAULT_VELOCITY)
                 .active(DEFAULT_ACTIVE)
                 .build();
         return poster;
@@ -152,7 +151,7 @@ public class PosterControllerSpringTest {
         assertThat(testPoster.getEmail()).isEqualTo(DEFAULT_EMAIL);
         assertThat(testPoster.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testPoster.getRate()).isEqualTo(DEFAULT_RATE);
-        assertThat(testPoster.getCapacity()).isEqualTo(DEFAULT_CAPACITY);
+        assertThat(testPoster.getVelocity()).isEqualTo(DEFAULT_VELOCITY);
         assertThat(testPoster.getActive()).isEqualTo(DEFAULT_ACTIVE);
     }
 
@@ -218,7 +217,7 @@ public class PosterControllerSpringTest {
     public void checkCapacityIsRequired() throws Exception {
         int databaseSizeBeforeTest = posterRepository.findAll().size();
         // set the field null
-        poster.setCapacity(null);
+        poster.setVelocity(null);
 
         // Create the Poster, which fails.
         PosterDTO posterDTO = posterMapper.posterToPosterDTO(poster);
@@ -248,7 +247,7 @@ public class PosterControllerSpringTest {
                 .andExpect(jsonPath("$.content.[*].email").value(hasItem(DEFAULT_EMAIL.toString())))
                 .andExpect(jsonPath("$.content.[*].name").value(hasItem(DEFAULT_NAME.toString())))
                 .andExpect(jsonPath("$.content.[*].rate").value(hasItem(DEFAULT_RATE.doubleValue())))
-                .andExpect(jsonPath("$.content.[*].capacity").value(hasItem(DEFAULT_CAPACITY)))
+                .andExpect(jsonPath("$.content.[*].velocity").value(hasItem(DEFAULT_VELOCITY)))
                 .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())));
     }
 
@@ -266,7 +265,7 @@ public class PosterControllerSpringTest {
                 .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL.toString()))
                 .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
                 .andExpect(jsonPath("$.rate").value(DEFAULT_RATE.doubleValue()))
-                .andExpect(jsonPath("$.capacity").value(DEFAULT_CAPACITY))
+                .andExpect(jsonPath("$.velocity").value(DEFAULT_VELOCITY))
                 .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE.booleanValue()));
     }
 
@@ -290,7 +289,7 @@ public class PosterControllerSpringTest {
         updatedPoster.setEmail(UPDATED_EMAIL);
         updatedPoster.setName(UPDATED_NAME);
         updatedPoster.setRate(UPDATED_RATE);
-        updatedPoster.setCapacity(UPDATED_CAPACITY);
+        updatedPoster.setVelocity(UPDATED_VELOCITY);
         updatedPoster.setActive(UPDATED_ACTIVE);
         PosterDTO posterDTO = posterMapper.posterToPosterDTO(updatedPoster);
 
@@ -306,7 +305,7 @@ public class PosterControllerSpringTest {
         assertThat(testPoster.getEmail()).isEqualTo(UPDATED_EMAIL);
         assertThat(testPoster.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testPoster.getRate()).isEqualTo(UPDATED_RATE);
-        assertThat(testPoster.getCapacity()).isEqualTo(UPDATED_CAPACITY);
+        assertThat(testPoster.getVelocity()).isEqualTo(UPDATED_VELOCITY);
         assertThat(testPoster.getActive()).isEqualTo(UPDATED_ACTIVE);
     }
 
@@ -326,4 +325,6 @@ public class PosterControllerSpringTest {
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeDelete - 1);
     }
+
+
 }

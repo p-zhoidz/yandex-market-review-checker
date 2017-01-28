@@ -19,7 +19,7 @@ public final class TestDummyObjectsFactory {
     public static Poster getPoster() {
         return Poster.builder()
                 .active(Boolean.TRUE)
-                .capacity(2)
+                .velocity(2)
                 .email("email@test.com")
                 .name("Test Name")
                 .rate(32.0)

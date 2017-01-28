@@ -74,7 +74,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="capacity" type="integer">
+            <column name="velocity" type="integer">
                 <constraints nullable="false"/>
             </column>
 
@@ -124,7 +124,6 @@
                 <constraints nullable="false"/>
             </column>
 
-            <!--//TODO add FK-->
             <column name="task_entry_id" type="bigint">
             </column>
 
@@ -228,6 +227,15 @@
                                  referencedColumnNames="id"
                                  referencedTableName="tasks"/>
 
+    </changeSet>
+
+    <changeSet id="201701290114" author="p.zhoidz">
+
+        <addForeignKeyConstraint baseColumnNames="task_entry_id"
+                                 baseTableName="report_entries"
+                                 constraintName="fk_report_entry_task_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="task_entries"/>
     </changeSet>
 
 </databaseChangeLog>
