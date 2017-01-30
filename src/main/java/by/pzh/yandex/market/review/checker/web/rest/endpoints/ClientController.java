@@ -81,7 +81,7 @@ public class ClientController {
      * @return the ResponseEntity with status 200 (OK) and the list of customers in body
      */
     @RequestMapping(value = "/clients", method = RequestMethod.GET)
-    PagedResources<ClientResource> getClients(@PageableDefault Pageable p) {
+    public PagedResources<ClientResource> getClients(@PageableDefault Pageable p) {
         Page<Client> clients = clientService.getClients(p.getPageNumber(), p.getPageSize());
         return pagedAssembler.toResource(clients, clientResourceAssembler);
     }
