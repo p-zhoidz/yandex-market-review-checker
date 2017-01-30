@@ -16,7 +16,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -80,7 +79,7 @@ public class PosterController {
      *
      * @return the ResponseEntity with status 200 (OK) and the list of posters in body
      */
-    @GetMapping(value = "/posters", produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/posters", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<PosterResource>>> getPosters(@PageableDefault Pageable p) {
         Page<Poster> posters = posterService.getPosters(p.getPageNumber(), p.getPageSize());
 

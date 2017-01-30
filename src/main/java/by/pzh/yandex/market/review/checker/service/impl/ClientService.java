@@ -76,9 +76,6 @@ public class ClientService {
     @Transactional(readOnly = true)
     public Client findOne(Long id) {
         return clientRepository.findOne(id);
-
-/*        ClientDTO clientDTO = clientMapper.clientToClientDTO(client);
-        return clientDTO;*/
     }
 
     /**
@@ -90,14 +87,4 @@ public class ClientService {
         clientRepository.delete(id);
     }
 
-    /**
-     * Save a client.
-     *
-     * @param client the entity to save
-     * @return the persisted entity
-     */
-  /*  private ClientDTO save(Client client) {
-        client = clientRepository.save(client);
-        return clientMapper.clientToClientDTO(client);
-    }*/
 }
