@@ -7,10 +7,30 @@ import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.repository.PosterRepository;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
 import by.pzh.yandex.market.review.checker.repository.specifications.StoreSpecifications;
+import com.itextpdf.text.Anchor;
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chapter;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Section;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,22 +51,16 @@ public class TaskDistributionService {
     private PosterRepository posterRepository;
     private StoreRepository storeRepository;
 
-    /**
-     * Parametrized constructor.
-     *
-     * @param posterRepository poster repository instance.
-     * @param storeRepository  store Repository instance.
-     */
-    public TaskDistributionService(PosterRepository posterRepository, StoreRepository storeRepository) {
-        this.posterRepository = posterRepository;
-        this.storeRepository = storeRepository;
-    }
+
+
+
 
     /**
      * Run task distribution process.
      *
      * @return List of distributed tasks.
      */
+    @Transactional(propagation = Propagation.NEVER)
     public List<Task> distribute() {
 
         List<Store> stores = storeRepository.findAll(where(StoreSpecifications.filterActive()));
@@ -58,6 +72,8 @@ public class TaskDistributionService {
                 .flatMap(Collection::stream)
                 .collect(groupingBy(o -> Task.builder()
                                 .poster(o.poster)
+                                .startDate(LocalDate.now())
+                                .endDate(LocalDate.now().plus(1, ChronoUnit.WEEKS))
                                 .build(),
                         HashMap::new,
                         mapping(o -> TaskEntry.builder()

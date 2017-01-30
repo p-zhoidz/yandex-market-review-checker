@@ -83,7 +83,7 @@ public class StoreController {
                                                                @PageableDefault Pageable p) {
         Page<StoreResource> result = storeService.getCustomerStores(clientId, p.getPageNumber(),
                 p.getPageSize())
-                .map(store -> storeResourceAssembler.toResource(store));
+                .map(store -> storeResourceAssembler.toResource(store, clientId));
 
         return ResponseEntity.ok(result);
     }

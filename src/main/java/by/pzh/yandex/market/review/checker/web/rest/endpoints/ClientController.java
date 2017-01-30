@@ -64,7 +64,6 @@ public class ClientController {
      * @return the ResponseEntity with status 200 (OK) and with body the updated clientDTO,
      * or with status 422 (Bad Request) if the clientDTO is not valid,
      * or with status 500 (Internal Server Error) if the clientDTO could not be updated
-     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/clients/{id}")
     public ResponseEntity<ClientResource> updateClient(@PathVariable Long id,

@@ -145,7 +145,6 @@
             </column>
 
             <column name="comment" type="varchar(255)">
-                <constraints nullable="true"/>
             </column>
 
             <column name="poster_id" type="bigint">

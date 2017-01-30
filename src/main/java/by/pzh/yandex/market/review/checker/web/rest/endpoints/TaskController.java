@@ -1,8 +1,14 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
+import by.pzh.yandex.market.review.checker.domain.Task;
+import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
+import by.pzh.yandex.market.review.checker.service.impl.ReportGenerationService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskService;
+import com.itextpdf.text.DocumentException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +17,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -26,9 +34,31 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api")
 public class TaskController {
+    private TaskService taskService;
+    private ReportGenerationService reportGenerationService;
 
     @Inject
-    private TaskService taskService;
+    public TaskController(TaskService taskService, ReportGenerationService reportGenerationService) {
+        this.taskService = taskService;
+        this.reportGenerationService = reportGenerationService;
+    }
+
+    //// TODO: 30.1.17 Should return statistics over generated data??? +
+    @PostMapping("/tasks/distribute")
+    public ResponseEntity<List<TaskEntry>> distribute() {
+        List<Task> distribute = taskService.distribute();
+        return ResponseEntity.ok(distribute.get(0).getTaskEntries());
+    }
+
+    @RequestMapping(value = "/tasks/{id}/pdf", method = RequestMethod.GET, produces = "application/pdf")
+    public ResponseEntity generateReport(@PathVariable Long id) throws DocumentException, IOException {
+        byte[] bytes = reportGenerationService.generatePDF(id);
+
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/pdf"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        String.format("attachment; filename=\"%s\"", "report"))
+                .body(bytes);
+    }
 
     /**
      * POST  /tasks : Create a new task.

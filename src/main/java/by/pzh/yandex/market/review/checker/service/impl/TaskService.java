@@ -1,16 +1,23 @@
 package by.pzh.yandex.market.review.checker.service.impl;
 
 import by.pzh.yandex.market.review.checker.domain.Task;
+import by.pzh.yandex.market.review.checker.domain.TaskEntry;
+import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
+import by.pzh.yandex.market.review.checker.service.tasks.TaskDistributionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Service Implementation for managing Task.
@@ -20,6 +27,8 @@ import java.util.stream.Collectors;
 public class TaskService {
     private TaskRepository taskRepository;
     private TaskMapper taskMapper;
+    private TaskDistributionService taskDistributionService;
+    private TaskEntryRepository taskEntryRepository;
 
     /**
      * Parametrized constructor.
@@ -28,9 +37,28 @@ public class TaskService {
      * @param taskMapper     task mapper instance.
      */
     @Inject
-    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
+    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
+                       TaskDistributionService taskDistributionService, TaskEntryRepository taskEntryRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.taskDistributionService = taskDistributionService;
+        this.taskEntryRepository = taskEntryRepository;
+    }
+
+    public List<Task> distribute() {
+        List<Task> tasks = taskDistributionService.distribute();
+        taskRepository.save(tasks);
+
+        List<TaskEntry> entries = tasks.stream()
+                .map(Task::getTaskEntries)
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        taskEntryRepository.save(entries);
+
+
+        return tasks;
+
     }
 
     /**
