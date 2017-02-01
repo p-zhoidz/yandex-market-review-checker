@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.domain;
 
 
+import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,5 +55,8 @@ public class Task implements Serializable {
 
     @ManyToOne
     private Poster poster;
+
+    @Column(name = "status")
+    private TaskStatus status;
 
 }

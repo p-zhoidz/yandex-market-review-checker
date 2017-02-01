@@ -5,13 +5,20 @@ import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ReportGenerationService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskService;
+import by.pzh.yandex.market.review.checker.web.rest.assemblers.TaskResourceAssembler;
+import by.pzh.yandex.market.review.checker.web.rest.resources.TaskResource;
 import com.itextpdf.text.DocumentException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -26,7 +33,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * REST controller for managing Task.
@@ -36,11 +42,17 @@ import java.util.Optional;
 public class TaskController {
     private TaskService taskService;
     private ReportGenerationService reportGenerationService;
+    private TaskResourceAssembler taskResourceAssembler;
+    private PagedResourcesAssembler<TaskResource> pagedAssembler;
 
     @Inject
-    public TaskController(TaskService taskService, ReportGenerationService reportGenerationService) {
+    public TaskController(TaskService taskService, ReportGenerationService reportGenerationService,
+                          PagedResourcesAssembler<TaskResource> pagedAssembler,
+                          TaskResourceAssembler taskResourceAssembler) {
         this.taskService = taskService;
         this.reportGenerationService = reportGenerationService;
+        this.taskResourceAssembler = taskResourceAssembler;
+        this.pagedAssembler = pagedAssembler;
     }
 
     //// TODO: 30.1.17 Should return statistics over generated data??? +
@@ -95,13 +107,34 @@ public class TaskController {
     }
 
     /**
-     * GET  /tasks : get all the tasks.
+     * Get task resources based on incoming paging settings.
      *
-     * @return the ResponseEntity with status 200 (OK) and the list of tasks in body
+     * @param p pageable params.
+     * @return {@link ResponseEntity} with 200 http status, which contain list of resources.
      */
-    @GetMapping("/tasks")
-    public List<TaskDTO> getAllTasks() {
-        return taskService.findAll();
+    @RequestMapping(value = "/tasks", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<TaskResource>>> getTasks(@PageableDefault Pageable p) {
+        Page<Task> posters = taskService.getTasks(p.getPageNumber(), p.getPageSize());
+
+        Page<TaskResource> page = posters.map(taskResourceAssembler::toResource);
+        PagedResources<Resource<TaskResource>> resources = pagedAssembler.toResource(page);
+        return ResponseEntity.ok(resources);
+    }
+
+    /**
+     * Get task resources based on incoming paging settings.
+     *
+     * @param p pageable params.
+     * @return {@link ResponseEntity} with 200 http status, which contain list of resources.
+     */
+    @RequestMapping(value = "/tasks/{id}/entries", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<TaskResource>>> getTaskEntries(@PathVariable Long id) {
+        List<TaskEntry> taskEntries = taskService.getTaskEntries(id);
+/*        taskEntries.stream().map(ta)
+
+        Page<TaskResource> page = posters.map(taskResourceAssembler::toResource);
+        PagedResources<Resource<TaskResource>> resources = pagedAssembler.toResource(page);*/
+        return ResponseEntity.ok(null);
     }
 
     /**
@@ -110,14 +143,11 @@ public class TaskController {
      * @param id the id of the taskDTO to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the taskDTO, or with status 404 (Not Found)
      */
-    @GetMapping("/tasks/{id}")
-    public ResponseEntity<TaskDTO> getTask(@PathVariable Long id) {
-        TaskDTO taskDTO = taskService.findOne(id);
-        return Optional.ofNullable(taskDTO)
-                .map(result -> new ResponseEntity<>(
-                        result,
-                        HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @RequestMapping(value = "/tasks/{id}", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<TaskResource> getTask(@PathVariable Long id) {
+        Task task = taskService.findOne(id);
+        TaskResource taskResource = taskResourceAssembler.toResource(task);
+        return ResponseEntity.ok(taskResource);
     }
 
     /**

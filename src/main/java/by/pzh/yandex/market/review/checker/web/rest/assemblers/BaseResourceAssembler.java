@@ -3,6 +3,7 @@ package by.pzh.yandex.market.review.checker.web.rest.assemblers;
 import by.pzh.yandex.market.review.checker.web.rest.endpoints.BaseController;
 import by.pzh.yandex.market.review.checker.web.rest.endpoints.ClientController;
 import by.pzh.yandex.market.review.checker.web.rest.endpoints.PosterController;
+import by.pzh.yandex.market.review.checker.web.rest.endpoints.TaskController;
 import by.pzh.yandex.market.review.checker.web.rest.resources.BaseResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
@@ -20,7 +21,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class BaseResourceAssembler extends ResourceAssemblerSupport<Object, BaseResource> {
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int DEFAULT_PAGE_NUMBER = 0;
-
 
     /**
      * Default constructor. Initializes assembler support.
@@ -48,6 +48,10 @@ public class BaseResourceAssembler extends ResourceAssemblerSupport<Object, Base
         resource.add(linkTo(methodOn(PosterController.class)
                 .getPosters(new PageRequest(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE)))
                 .withRel("posters"));
+
+        resource.add(linkTo(methodOn(TaskController.class)
+                .getTasks(new PageRequest(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE)))
+                .withRel("tasks"));
 
         return resource;
     }

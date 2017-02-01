@@ -7,17 +7,20 @@ import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import by.pzh.yandex.market.review.checker.service.tasks.TaskDistributionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.fetchStore;
+import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.filterTaskId;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.data.jpa.domain.Specifications.where;
 
 /**
  * Service Implementation for managing Task.
@@ -84,17 +87,23 @@ public class TaskService {
     }
 
     /**
-     * Get all the tasks.
+     * Get tasks based on page nad page size params.
      *
-     * @return the list of entities
+     * @param page page number param.
+     * @param size page size param.
+     * @return {@link Page} of tasks based on provided params.
      */
     @Transactional(readOnly = true)
-    public List<TaskDTO> findAll() {
-        List<TaskDTO> result = taskRepository.findAll().stream()
-                .map(taskMapper::taskToTaskDTO)
-                .collect(Collectors.toCollection(LinkedList::new));
+    public Page<Task> getTasks(int page, int size) {
+        Pageable pageable = new PageRequest(page, size);
+        return taskRepository.findAll(pageable);
+    }
 
-        return result;
+    @Transactional(readOnly = true)
+    public List<TaskEntry> getTaskEntries(Long taskId) {
+        return taskEntryRepository.findAll(
+                where(filterTaskId(taskId))
+                        .and(fetchStore()));
     }
 
     /**
@@ -104,10 +113,9 @@ public class TaskService {
      * @return the entity
      */
     @Transactional(readOnly = true)
-    public TaskDTO findOne(Long id) {
-        Task task = taskRepository.findOne(id);
-        TaskDTO taskDTO = taskMapper.taskToTaskDTO(task);
-        return taskDTO;
+    //// TODO: 30.1.17 return optional
+    public Task findOne(Long id) {
+        return taskRepository.findOne(id);
     }
 
     /**
