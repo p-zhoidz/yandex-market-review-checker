@@ -79,12 +79,6 @@ public class PosterControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
-    private PosterResourceAssembler posterResourceAssembler;
-
-    @Inject
-    private PagedResourcesAssembler<PosterResource> pagedAssembler;
-
-    @Inject
     private ExceptionTranslator exceptionTranslator;
 
     @Inject
@@ -97,10 +91,7 @@ public class PosterControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        PosterController posterResource = new PosterController();
-        ReflectionTestUtils.setField(posterResource, "posterService", posterService);
-        ReflectionTestUtils.setField(posterResource, "posterResourceAssembler", posterResourceAssembler);
-        ReflectionTestUtils.setField(posterResource, "pagedAssembler", pagedAssembler);
+        PosterController posterResource = new PosterController(posterService);
 
         this.restPosterMockMvc = MockMvcBuilders.standaloneSetup(posterResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -115,20 +106,19 @@ public class PosterControllerSpringTest {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Poster createEntity(EntityManager em) {
-        Poster poster = Poster.builder()
+    public static Poster createEntity() {
+        return Poster.builder()
                 .email(DEFAULT_EMAIL)
                 .name(DEFAULT_NAME)
                 .rate(DEFAULT_RATE)
                 .velocity(DEFAULT_VELOCITY)
                 .active(DEFAULT_ACTIVE)
                 .build();
-        return poster;
     }
 
     @Before
     public void initTest() {
-        poster = createEntity(em);
+        poster = createEntity();
     }
 
     @Test

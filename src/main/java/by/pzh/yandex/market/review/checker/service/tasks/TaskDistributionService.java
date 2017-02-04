@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -52,8 +53,11 @@ public class TaskDistributionService {
     private StoreRepository storeRepository;
 
 
-
-
+    @Inject
+    public TaskDistributionService(PosterRepository posterRepository, StoreRepository storeRepository) {
+        this.posterRepository = posterRepository;
+        this.storeRepository = storeRepository;
+    }
 
     /**
      * Run task distribution process.

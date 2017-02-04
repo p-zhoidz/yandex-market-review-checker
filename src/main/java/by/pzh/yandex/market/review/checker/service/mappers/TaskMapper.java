@@ -31,7 +31,7 @@ public interface TaskMapper {
      * @param tasks list of entities to be mapped.
      * @return list of {@link TaskDTO}.
      */
-    List<TaskDTO> tasksToTaskDTOs(List<Task> tasks);
+  //  List<TaskDTO> tasksToTaskDTOs(List<Task> tasks);
 
     /**
      * Map {@link TaskDTO} to {@link Task}.
@@ -39,9 +39,14 @@ public interface TaskMapper {
      * @param taskDTO entity to be mapped.
      * @return instance of the {@link Task}.
      */
-    @Named("taskDTOToTask")
-    @Mapping(source = "posterId", target = "poster")
+   // @Named("taskDTOToTask")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "poster", source = "posterId")
     Task taskDTOToTask(TaskDTO taskDTO);
+
+/*    @Named("taskDTOToTask")
+    @Mapping(source = "posterId", target = "poster")
+    Task taskDTOToTask(TaskDTO taskDTO);*/
 
     /**
      * Map {@link TaskDTO} to {@link Task}.
@@ -50,9 +55,9 @@ public interface TaskMapper {
      * @param taskDTO entity to be mapped.
      * @return instance of the {@link Task}.
      */
-    @Mapping(source = "posterId", target = "poster")
+/*    @Mapping(source = "posterId", target = "poster")
     @Mapping(target = "id", ignore = true)
-    Task taskDTOToNewTask(TaskDTO taskDTO);
+    Task taskDTOToNewTask(TaskDTO taskDTO);*/
 
     /**
      * Map list of {@link TaskDTO} to list of {@link Task}.
@@ -60,8 +65,8 @@ public interface TaskMapper {
      * @param taskDTOs list of entities to be mapped.
      * @return list of {@link Task}.
      */
-    @IterableMapping(qualifiedByName = "taskDTOToTask")
-    List<Task> taskDTOsToTasks(List<TaskDTO> taskDTOs);
+/*    @IterableMapping(qualifiedByName = "taskDTOToTask")
+    List<Task> taskDTOsToTasks(List<TaskDTO> taskDTOs);*/
 
     /**
      * Generate {@link Poster} based on id.

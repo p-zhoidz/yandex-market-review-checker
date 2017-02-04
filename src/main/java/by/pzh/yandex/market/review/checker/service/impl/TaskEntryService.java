@@ -5,6 +5,8 @@ import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskEntryMapper;
+import by.pzh.yandex.market.review.checker.web.rest.assemblers.TaskEntryResourceAssembler;
+import by.pzh.yandex.market.review.checker.web.rest.resources.TaskEntryResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,11 @@ import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.fetchStore;
+import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.filterTaskId;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.jpa.domain.Specifications.where;
 
 /**
  * @author p.zhoidz.
@@ -22,6 +29,8 @@ public class TaskEntryService {
     private TaskEntryMapper taskEntryMapper;
     private TaskEntryRepository taskEntryRepository;
 
+    private TaskEntryResourceAssembler taskEntryResourceAssembler;
+
     /**
      * Parametrized constructor.
      *
@@ -29,9 +38,11 @@ public class TaskEntryService {
      * @param taskEntryMapper     task entry mapper instance.
      */
     @Inject
-    public TaskEntryService(TaskEntryRepository taskEntryRepository, TaskEntryMapper taskEntryMapper) {
+    public TaskEntryService(TaskEntryRepository taskEntryRepository, TaskEntryMapper taskEntryMapper,
+                            TaskEntryResourceAssembler taskEntryResourceAssembler) {
         this.taskEntryMapper = taskEntryMapper;
         this.taskEntryRepository = taskEntryRepository;
+        this.taskEntryResourceAssembler = taskEntryResourceAssembler;
     }
 
     /**
@@ -67,6 +78,16 @@ public class TaskEntryService {
     public TaskEntryDTO findOne(Long id) {
         TaskEntry taskEntry = taskEntryRepository.findOne(id);
         return taskEntryMapper.taskEntryToTaskEntryDTO(taskEntry);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskEntryResource> getTaskEntries(Long taskId) {
+        return taskEntryRepository.findAll(
+                where(filterTaskId(taskId))
+                        .and(fetchStore()))
+                .stream()
+                .map(taskEntryResourceAssembler::toResource)
+                .collect(toList());
     }
 
     /**

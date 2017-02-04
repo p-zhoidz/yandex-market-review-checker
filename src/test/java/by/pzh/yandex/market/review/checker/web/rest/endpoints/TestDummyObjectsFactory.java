@@ -5,6 +5,7 @@ import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Report;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.domain.Task;
+import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
 
 import java.time.LocalDate;
 
@@ -45,6 +46,7 @@ public final class TestDummyObjectsFactory {
                 .poster(getPoster())
                 .endDate(LocalDate.now())
                 .startDate(LocalDate.now())
+                .status(TaskStatus.OPEN)
                 .build();
     }
 

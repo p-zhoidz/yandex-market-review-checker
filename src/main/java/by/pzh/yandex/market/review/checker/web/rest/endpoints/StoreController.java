@@ -1,14 +1,14 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
-import by.pzh.yandex.market.review.checker.domain.Store;
+import by.pzh.yandex.market.review.checker.commons.exceptions.EntityNotFoundException;
+import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.impl.StoreService;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.StoreResourceAssembler;
 import by.pzh.yandex.market.review.checker.web.rest.resources.StoreResource;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
-import java.net.URISyntaxException;
 
 /**
  * REST controller for managing Store.
@@ -31,11 +30,12 @@ import java.net.URISyntaxException;
 @RequestMapping("/api")
 public class StoreController {
 
-    @Inject
     private StoreService storeService;
 
     @Inject
-    private StoreResourceAssembler storeResourceAssembler;
+    public StoreController(StoreService storeService) {
+        this.storeService = storeService;
+    }
 
     /**
      * POST  /stores : Create a new store.
@@ -48,8 +48,7 @@ public class StoreController {
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<StoreResource> createStore(@PathVariable("client-id") Long clientId,
                                                      @Valid @RequestBody StoreDTO storeDTO) {
-        Store result = storeService.create(clientId, storeDTO);
-        StoreResource resource = storeResourceAssembler.toResource(result);
+        StoreResource resource = storeService.create(clientId, storeDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(resource);
     }
 
@@ -60,16 +59,13 @@ public class StoreController {
      * @return the ResponseEntity with status 200 (OK) and with body the updated storeDTO,
      * or with status 422 (Bad Request) if the storeDTO is not valid,
      * or with status 500 (Internal Server Error) if the storeDTO could not be updated
-     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping(value = "/clients/{client-id}/stores/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<StoreResource> updateStore(@PathVariable Long id,
                                                      @PathVariable("client-id") Long clientID,
                                                      @Valid @RequestBody StoreDTO storeDTO) {
-        Store result = storeService.update(id, clientID, storeDTO);
-        StoreResource resource = storeResourceAssembler.toResource(result);
-        return ResponseEntity.ok()
-                .body(resource);
+        StoreResource resource = storeService.update(id, clientID, storeDTO);
+        return ResponseEntity.ok(resource);
     }
 
     /**
@@ -79,13 +75,12 @@ public class StoreController {
      */
     @RequestMapping(value = "/clients/{client-id}/stores", method = RequestMethod.GET,
             produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<Page<StoreResource>> getClientStores(@PathVariable("client-id") long clientId,
-                                                               @PageableDefault Pageable p) {
-        Page<StoreResource> result = storeService.getCustomerStores(clientId, p.getPageNumber(),
-                p.getPageSize())
-                .map(store -> storeResourceAssembler.toResource(store, clientId));
+    public ResponseEntity<PagedResources<StoreResource>> getClientStores(@PathVariable("client-id") long clientId,
+                                                                         @PageableDefault Pageable p) {
+        PagedResources<StoreResource> resources = storeService.getCustomerStores(clientId,
+                p.getPageNumber(), p.getPageSize());
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(resources);
     }
 
     /**
@@ -98,10 +93,9 @@ public class StoreController {
             produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<StoreResource> getStore(@PathVariable("client-id") Long clientId,
                                                   @PathVariable("id") Long id) {
-        Store store = storeService.findOne(id);
-        StoreResource resource = storeResourceAssembler.toResource(store);
-
-        return ResponseEntity.ok(resource);
+        return storeService.findOne(id).map(ResponseEntity::ok)
+                .orElseThrow(() -> new EntityNotFoundException(Poster.class,
+                        String.format("store with id %s not found", id)));
     }
 
     /**

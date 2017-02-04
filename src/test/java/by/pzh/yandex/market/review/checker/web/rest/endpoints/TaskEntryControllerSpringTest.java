@@ -69,9 +69,8 @@ public class TaskEntryControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        TaskEntryController taskEntryResource = new TaskEntryController();
-        ReflectionTestUtils.setField(taskEntryResource, "taskEntryService", taskEntryService);
-        this.restTaskEntryMockMvc = MockMvcBuilders.standaloneSetup(taskEntryResource)
+        TaskEntryController sut = new TaskEntryController(taskEntryService);
+        this.restTaskEntryMockMvc = MockMvcBuilders.standaloneSetup(sut)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
     }
@@ -142,19 +141,6 @@ public class TaskEntryControllerSpringTest {
         // Validate the Alice in the database
         List<TaskEntry> taskEntryList = taskEntryRepository.findAll();
         assertThat(taskEntryList).hasSize(databaseSizeBeforeCreate + 1);
-    }
-
-    @Test
-    @Transactional
-    public void getAllTaskEntries() throws Exception {
-        // Initialize the database
-        taskEntryRepository.saveAndFlush(taskEntry);
-
-        // Get all the taskEntryList
-        restTaskEntryMockMvc.perform(get("/api/task-entries?sort=id,desc"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.[*].id").value(hasItem(taskEntry.getId().intValue())));
     }
 
     @Test

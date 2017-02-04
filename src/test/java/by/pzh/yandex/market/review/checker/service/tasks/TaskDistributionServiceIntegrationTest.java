@@ -5,6 +5,13 @@ import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.domain.Task;
+import by.pzh.yandex.market.review.checker.repository.PosterRepository;
+import by.pzh.yandex.market.review.checker.repository.StoreRepository;
+import by.pzh.yandex.market.review.checker.repository.TaskRepository;
+import by.pzh.yandex.market.review.checker.web.rest.resources.PosterResource;
+import by.pzh.yandex.market.review.checker.web.rest.resources.StoreResource;
+import by.pzh.yandex.market.review.checker.web.rest.resources.TaskResource;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,11 +36,20 @@ import static org.junit.Assert.assertTrue;
 public class TaskDistributionServiceIntegrationTest {
 
     @Inject
-    private TaskDistributionService sut;
+    private PosterRepository posterRepository;
+
+    @Inject
+    private StoreRepository storeRepository;
 
     @Inject
     private EntityManager em;
 
+    private TaskDistributionService sut;
+
+    @Before
+    public void setUp() throws Exception {
+        sut = new TaskDistributionService(posterRepository, storeRepository);
+    }
 
     @Test
     @Transactional

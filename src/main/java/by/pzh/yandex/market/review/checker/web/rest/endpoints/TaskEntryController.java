@@ -25,8 +25,12 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class TaskEntryController {
 
-    @Inject
     private TaskEntryService taskEntryService;
+
+    @Inject
+    public TaskEntryController(TaskEntryService taskEntryService) {
+        this.taskEntryService = taskEntryService;
+    }
 
     /**
      * POST  /task-entries : Create a new taskEntry.
@@ -42,16 +46,6 @@ public class TaskEntryController {
         TaskEntryDTO result = taskEntryService.create(taskEntryDTO);
         return ResponseEntity.created(new URI("/api/task-entries/" + result.getId()))
                 .body(result);
-    }
-
-    /**
-     * GET  /task-entries : get all the taskEntries.
-     *
-     * @return the ResponseEntity with status 200 (OK) and the list of taskEntries in body
-     */
-    @GetMapping("/task-entries")
-    public List<TaskEntryDTO> getAllTaskEntries() {
-        return taskEntryService.findAll();
     }
 
     /**

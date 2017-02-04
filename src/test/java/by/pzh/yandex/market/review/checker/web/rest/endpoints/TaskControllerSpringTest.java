@@ -3,8 +3,11 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Task;
+import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
 import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
+import by.pzh.yandex.market.review.checker.service.impl.ReportGenerationService;
+import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskService;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import org.junit.Before;
@@ -13,10 +16,9 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +73,11 @@ public class TaskControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
+    private ReportGenerationService reportGenerationService;
+    @Inject
+    private TaskEntryService taskEntryService;
+
+    @Inject
     private EntityManager em;
 
     private MockMvc restTaskMockMvc;
@@ -80,8 +87,7 @@ public class TaskControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        TaskController taskResource = new TaskController();
-        ReflectionTestUtils.setField(taskResource, "taskService", taskService);
+        TaskController taskResource = new TaskController(taskService, reportGenerationService, taskEntryService);
         this.restTaskMockMvc = MockMvcBuilders.standaloneSetup(taskResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
@@ -97,13 +103,13 @@ public class TaskControllerSpringTest {
         Poster poster = TestDummyObjectsFactory.getPoster();
         em.persist(poster);
 
-        Task task = Task.builder()
+        return Task.builder()
                 .poster(poster)
                 .startDate(DEFAULT_START_DATE)
                 .endDate(DEFAULT_END_DATE)
                 .comment(DEFAULT_COMMENT)
+                .status(TaskStatus.OPEN)
                 .build();
-        return task;
     }
 
     @Before
@@ -201,11 +207,11 @@ public class TaskControllerSpringTest {
         // Get all the taskList
         restTaskMockMvc.perform(get("/api/tasks?sort=id,desc"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
                 .andExpect(jsonPath("$.[*].id").value(hasItem(task.getId().intValue())))
                 .andExpect(jsonPath("$.[*].startDate").value(hasItem(DEFAULT_START_DATE.toString())))
                 .andExpect(jsonPath("$.[*].endDate").value(hasItem(DEFAULT_END_DATE.toString())))
-                .andExpect(jsonPath("$.[*].comment").value(hasItem(DEFAULT_COMMENT.toString())));
+                .andExpect(jsonPath("$.[*].comment").value(hasItem(DEFAULT_COMMENT)));
     }
 
     @Test
@@ -217,11 +223,11 @@ public class TaskControllerSpringTest {
         // Get the task
         restTaskMockMvc.perform(get("/api/tasks/{id}", task.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
                 .andExpect(jsonPath("$.id").value(task.getId().intValue()))
                 .andExpect(jsonPath("$.startDate").value(DEFAULT_START_DATE.toString()))
                 .andExpect(jsonPath("$.endDate").value(DEFAULT_END_DATE.toString()))
-                .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT.toString()));
+                .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT));
     }
 
     @Test
@@ -258,25 +264,6 @@ public class TaskControllerSpringTest {
         assertThat(testTask.getStartDate()).isEqualTo(UPDATED_START_DATE);
         assertThat(testTask.getEndDate()).isEqualTo(UPDATED_END_DATE);
         assertThat(testTask.getComment()).isEqualTo(UPDATED_COMMENT);
-    }
-
-    @Test
-    @Transactional
-    public void updateNonExistingTask() throws Exception {
-        int databaseSizeBeforeUpdate = taskRepository.findAll().size();
-
-        // Create the Task
-        TaskDTO taskDTO = taskMapper.taskToTaskDTO(task);
-
-        // If the entity doesn't have an ID, it will be created instead of just being updated
-        restTaskMockMvc.perform(put("/api/tasks")
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(taskDTO)))
-                .andExpect(status().isCreated());
-
-        // Validate the Task in the database
-        List<Task> taskList = taskRepository.findAll();
-        assertThat(taskList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test

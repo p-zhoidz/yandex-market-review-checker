@@ -22,20 +22,17 @@ public class StoreResourceAssembler extends ResourceAssemblerSupport<Store, Stor
 
     @Override
     public StoreResource toResource(Store entity) {
-        return toResource(entity, entity.getOwner().getId());
-    }
-
-    public StoreResource toResource(Store entity, Long clientId) {
         StoreResource resource = new StoreResource();
         resource.setActive(entity.getActive());
         resource.setNumber(entity.getId());
         resource.setDesiredReviewsNumber(entity.getDesiredReviewsNumber());
         resource.setUrl(entity.getUrl());
         resource.setCreated(entity.getCreated());
-        resource.add(linkTo(methodOn(StoreController.class).getStore(clientId, entity.getId()))
+        resource.add(linkTo(methodOn(StoreController.class).getStore(entity.getOwner().getId(), entity.getId()))
                 .withSelfRel());
-        resource.add(linkTo(methodOn(ClientController.class).getClient(clientId)).withRel("owner"));
+        resource.add(linkTo(methodOn(ClientController.class).getClient(entity.getOwner().getId())).withRel("owner"));
 
         return resource;
     }
+
 }

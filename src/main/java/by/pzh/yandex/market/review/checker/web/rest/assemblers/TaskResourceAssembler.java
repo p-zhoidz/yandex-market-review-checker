@@ -6,6 +6,7 @@ import by.pzh.yandex.market.review.checker.web.rest.endpoints.TaskController;
 import by.pzh.yandex.market.review.checker.web.rest.endpoints.TaskEntryController;
 import by.pzh.yandex.market.review.checker.web.rest.resources.TaskResource;
 import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.stereotype.Component;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -13,6 +14,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 /**
  * @author p.zhoidz.
  */
+@Component
 public class TaskResourceAssembler extends ResourceAssemblerSupport<Task, TaskResource> {
 
     public TaskResourceAssembler() {
@@ -27,8 +29,6 @@ public class TaskResourceAssembler extends ResourceAssemblerSupport<Task, TaskRe
                 .endDate(entity.getEndDate())
                 .comment(entity.getComment())
                 .status(entity.getStatus())
-                .poster(entity.getPoster())
-                .taskEntries(entity.getTaskEntries())
                 .build();
 
         resource.add(linkTo(methodOn(TaskController.class)
@@ -41,8 +41,7 @@ public class TaskResourceAssembler extends ResourceAssemblerSupport<Task, TaskRe
 
         resource.add(linkTo(methodOn(TaskController.class)
                 .getTaskEntries(entity.getId()))
-                .withRel("task-entries"));
-
+                .withRel("task_entries"));
 
         return resource;
     }

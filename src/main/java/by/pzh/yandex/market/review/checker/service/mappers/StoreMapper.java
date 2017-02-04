@@ -58,7 +58,6 @@ public interface StoreMapper {
     @Mapping(target = "id", expression = "java(id)")
     Store storeDTOToStore(Long id, Long clientId, StoreDTO storeDTO);
 
-
     /**
      * Generate {@link Client} based on id.
      *

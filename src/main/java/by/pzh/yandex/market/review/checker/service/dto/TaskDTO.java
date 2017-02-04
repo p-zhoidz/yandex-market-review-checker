@@ -1,5 +1,6 @@
 package by.pzh.yandex.market.review.checker.service.dto;
 
+import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -13,8 +14,6 @@ import java.time.LocalDate;
 @Data
 public class TaskDTO implements Serializable {
 
-    private Long id;
-
     @NotNull
     private LocalDate startDate;
 
@@ -25,5 +24,7 @@ public class TaskDTO implements Serializable {
 
     @NotNull
     private Long posterId;
+
+    private TaskStatus status;
 
 }

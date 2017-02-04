@@ -72,9 +72,6 @@ public class StoreControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
-    private StoreResourceAssembler storeResourceAssembler;
-
-    @Inject
     private ExceptionTranslator exceptionTranslator;
 
     @Inject
@@ -87,9 +84,7 @@ public class StoreControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        StoreController storeResource = new StoreController();
-        ReflectionTestUtils.setField(storeResource, "storeService", storeService);
-        ReflectionTestUtils.setField(storeResource, "storeResourceAssembler", storeResourceAssembler);
+        StoreController storeResource = new StoreController(storeService);
         this.restStoreMockMvc = MockMvcBuilders.standaloneSetup(storeResource)
                 .setControllerAdvice(exceptionTranslator)
                 .setCustomArgumentResolvers(pageableArgumentResolver)

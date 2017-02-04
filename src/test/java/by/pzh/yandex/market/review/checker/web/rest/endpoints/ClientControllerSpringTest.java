@@ -72,12 +72,6 @@ public class ClientControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
-    private ClientResourceAssembler clientResourceAssembler;
-
-    @Inject
-    private PagedResourcesAssembler<Client> pagedAssembler;
-
-    @Inject
     private EntityManager em;
 
     private MockMvc restClientMockMvc;
@@ -87,10 +81,7 @@ public class ClientControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        ClientController customerResource = new ClientController();
-        ReflectionTestUtils.setField(customerResource, "clientService", clientService);
-        ReflectionTestUtils.setField(customerResource, "clientResourceAssembler", clientResourceAssembler);
-        ReflectionTestUtils.setField(customerResource, "pagedAssembler", pagedAssembler);
+        ClientController customerResource = new ClientController(clientService);
         this.restClientMockMvc = MockMvcBuilders.standaloneSetup(customerResource)
                 .setControllerAdvice(controllerAdvice)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -103,18 +94,17 @@ public class ClientControllerSpringTest {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Client createEntity(EntityManager em) {
-        Client client = Client.builder()
+    public static Client createEntity() {
+        return Client.builder()
                 .email(DEFAULT_EMAIL)
                 .active(DEFAULT_ACTIVE)
                 .comment(DEFAULT_COMMENT)
                 .build();
-        return client;
     }
 
     @Before
     public void initTest() {
-        client = createEntity(em);
+        client = createEntity();
     }
 
     @Test
