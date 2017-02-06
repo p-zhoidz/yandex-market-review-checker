@@ -16,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -47,5 +48,8 @@ public class ReportEntry implements Serializable {
 
     @ManyToOne
     private Report report;
+
+    @OneToOne
+    private Store store;
 
 }
