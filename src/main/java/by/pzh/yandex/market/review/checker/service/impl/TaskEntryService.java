@@ -5,8 +5,6 @@ import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskEntryMapper;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.TaskEntryResourceAssembler;
-import by.pzh.yandex.market.review.checker.web.rest.resources.TaskEntryResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +15,6 @@ import java.util.stream.Collectors;
 
 import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.fetchStore;
 import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.filterTaskId;
-import static java.util.stream.Collectors.toList;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 /**
@@ -29,7 +26,7 @@ public class TaskEntryService {
     private TaskEntryMapper taskEntryMapper;
     private TaskEntryRepository taskEntryRepository;
 
-    private TaskEntryResourceAssembler taskEntryResourceAssembler;
+    //private TaskEntryResourceAssembler taskEntryResourceAssembler;
 
     /**
      * Parametrized constructor.
@@ -38,11 +35,9 @@ public class TaskEntryService {
      * @param taskEntryMapper     task entry mapper instance.
      */
     @Inject
-    public TaskEntryService(TaskEntryRepository taskEntryRepository, TaskEntryMapper taskEntryMapper,
-                            TaskEntryResourceAssembler taskEntryResourceAssembler) {
+    public TaskEntryService(TaskEntryRepository taskEntryRepository, TaskEntryMapper taskEntryMapper) {
         this.taskEntryMapper = taskEntryMapper;
         this.taskEntryRepository = taskEntryRepository;
-        this.taskEntryResourceAssembler = taskEntryResourceAssembler;
     }
 
     /**
@@ -81,13 +76,10 @@ public class TaskEntryService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskEntryResource> getTaskEntries(Long taskId) {
+    public List<TaskEntry> getTaskEntries(Long taskId) {
         return taskEntryRepository.findAll(
                 where(filterTaskId(taskId))
-                        .and(fetchStore()))
-                .stream()
-                .map(taskEntryResourceAssembler::toResource)
-                .collect(toList());
+                        .and(fetchStore()));
     }
 
     /**

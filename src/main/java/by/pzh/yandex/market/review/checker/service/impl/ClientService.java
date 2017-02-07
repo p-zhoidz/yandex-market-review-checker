@@ -4,13 +4,10 @@ import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.repository.ClientRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ClientDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.ClientMapper;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.ClientResourceAssembler;
-import by.pzh.yandex.market.review.checker.web.rest.resources.ClientResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +22,6 @@ import java.util.Optional;
 public class ClientService {
     private ClientRepository clientRepository;
     private ClientMapper clientMapper;
-    private ClientResourceAssembler clientResourceAssembler;
-    private PagedResourcesAssembler<Client> pagedAssembler;
 
     /**
      * Parametrized constructor.
@@ -35,13 +30,9 @@ public class ClientService {
      * @param clientMapper     customer mapper instance.
      */
     @Inject
-    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper,
-                         ClientResourceAssembler clientResourceAssembler,
-                         PagedResourcesAssembler<Client> pagedAssembler) {
+    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper) {
         this.clientRepository = clientRepository;
         this.clientMapper = clientMapper;
-        this.clientResourceAssembler = clientResourceAssembler;
-        this.pagedAssembler = pagedAssembler;
     }
 
     /**
@@ -51,10 +42,9 @@ public class ClientService {
      * @param dto the entity to save
      * @return the persisted entity
      */
-    public ClientResource update(Long id, ClientDTO dto) {
+    public Client update(Long id, ClientDTO dto) {
         Client client = clientMapper.clientDTOToClient(id, dto);
-        clientRepository.save(client);
-        return clientResourceAssembler.toResource(client);
+        return clientRepository.save(client);
     }
 
     /**
@@ -63,10 +53,9 @@ public class ClientService {
      * @param dto the entity to save
      * @return the persisted entity
      */
-    public ClientResource create(ClientDTO dto) {
+    public Client create(ClientDTO dto) {
         Client client = clientMapper.clientDTOToClient(dto);
-        clientRepository.save(client);
-        return clientResourceAssembler.toResource(client);
+        return clientRepository.save(client);
     }
 
     /**
@@ -75,10 +64,9 @@ public class ClientService {
      * @return the list of entities
      */
     @Transactional(readOnly = true)
-    public PagedResources<ClientResource> getClients(int page, int size) {
+    public Page<Client> getClients(int page, int size) {
         Pageable pageable = new PageRequest(page, size);
-        Page<Client> clients = clientRepository.findAll(pageable);
-        return pagedAssembler.toResource(clients, clientResourceAssembler);
+        return clientRepository.findAll(pageable);
     }
 
     /**
@@ -88,9 +76,8 @@ public class ClientService {
      * @return the entity
      */
     @Transactional(readOnly = true)
-    public Optional<ClientResource> findOne(Long id) {
-        return Optional.ofNullable(clientRepository.findOne(id))
-                .map(clientResourceAssembler::toResource);
+    public Optional<Client> findOne(Long id) {
+        return Optional.ofNullable(clientRepository.findOne(id));
     }
 
     /**

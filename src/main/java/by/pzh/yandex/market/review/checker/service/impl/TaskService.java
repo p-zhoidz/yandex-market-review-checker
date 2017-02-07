@@ -8,13 +8,9 @@ import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import by.pzh.yandex.market.review.checker.service.tasks.TaskDistributionService;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.TaskResourceAssembler;
-import by.pzh.yandex.market.review.checker.web.rest.resources.TaskResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,13 +27,10 @@ import static java.util.stream.Collectors.toList;
 @Service
 @Transactional
 public class TaskService {
-    //FIXME
     private TaskRepository taskRepository;
     private TaskMapper taskMapper;
     private TaskDistributionService taskDistributionService;
     private TaskEntryRepository taskEntryRepository;
-    private TaskResourceAssembler taskResourceAssembler;
-    private PagedResourcesAssembler<Task> pagedAssembler;
 
     /**
      * Parametrized constructor.
@@ -47,14 +40,11 @@ public class TaskService {
      */
     @Inject
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
-                       TaskDistributionService taskDistributionService, TaskEntryRepository taskEntryRepository,
-                       TaskResourceAssembler taskResourceAssembler, PagedResourcesAssembler<Task> pagedAssembler) {
+                       TaskDistributionService taskDistributionService, TaskEntryRepository taskEntryRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
         this.taskDistributionService = taskDistributionService;
         this.taskEntryRepository = taskEntryRepository;
-        this.taskResourceAssembler = taskResourceAssembler;
-        this.pagedAssembler = pagedAssembler;
     }
 
     public List<Task> distribute() {
@@ -76,10 +66,10 @@ public class TaskService {
      * @param taskDTO the entity to save
      * @return the persisted entity
      */
-    public TaskResource create(TaskDTO taskDTO) {
+    public Task create(TaskDTO taskDTO) {
         Task task = taskMapper.taskDTOToTask(taskDTO);
         task.setStatus(TaskStatus.OPEN);
-        return save(task);
+        return taskRepository.save(task);
     }
 
     /**
@@ -89,10 +79,10 @@ public class TaskService {
      * @return the persisted entity
      */
     //FIXME
-    public TaskResource update(Long id, TaskDTO taskDTO) {
+    public Task update(Long id, TaskDTO taskDTO) {
         Task task = taskMapper.taskDTOToTask(taskDTO);
         task.setId(id);
-        return save(task);
+        return taskRepository.save(task);
     }
 
     /**
@@ -103,10 +93,9 @@ public class TaskService {
      * @return {@link Page} of tasks based on provided params.
      */
     @Transactional(readOnly = true)
-    public PagedResources<TaskResource> getTasks(int page, int size) {
+    public Page<Task> getTasks(int page, int size) {
         Pageable pageable = new PageRequest(page, size);
-        Page<Task> tasks = taskRepository.findAll(pageable);
-        return pagedAssembler.toResource(tasks, taskResourceAssembler);
+        return taskRepository.findAll(pageable);
     }
 
     /**
@@ -116,9 +105,8 @@ public class TaskService {
      * @return the entity
      */
     @Transactional(readOnly = true)
-    public Optional<TaskResource> findOne(Long id) {
-        return Optional.ofNullable(taskRepository.findOne(id))
-                .map(taskResourceAssembler::toResource);
+    public Optional<Task> findOne(Long id) {
+        return Optional.ofNullable(taskRepository.findOne(id));
     }
 
     /**
@@ -130,14 +118,4 @@ public class TaskService {
         taskRepository.delete(id);
     }
 
-    /**
-     * Save a task.
-     *
-     * @param task the entity to save
-     * @return the persisted entity
-     */
-    private TaskResource save(Task task) {
-        task = taskRepository.save(task);
-        return taskResourceAssembler.toResource(task);
-    }
 }

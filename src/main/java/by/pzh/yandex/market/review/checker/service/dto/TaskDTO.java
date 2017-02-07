@@ -14,6 +14,8 @@ import java.time.LocalDate;
 @Data
 public class TaskDTO implements Serializable {
 
+    private Long id;
+
     @NotNull
     private LocalDate startDate;
 

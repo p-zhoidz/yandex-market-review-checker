@@ -4,14 +4,11 @@ import by.pzh.yandex.market.review.checker.commons.exceptions.EntityNotFoundExce
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.service.dto.PosterDTO;
 import by.pzh.yandex.market.review.checker.service.impl.PosterService;
-import by.pzh.yandex.market.review.checker.web.rest.resources.PosterResource;
+import by.pzh.yandex.market.review.checker.service.mappers.PosterMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,10 +30,12 @@ import javax.validation.Valid;
 @RequestMapping("/api")
 public class PosterController {
     private PosterService posterService;
+    private PosterMapper posterMapper;
 
     @Inject
-    public PosterController(PosterService posterService) {
+    public PosterController(PosterService posterService, PosterMapper posterMapper) {
         this.posterService = posterService;
+        this.posterMapper = posterMapper;
     }
 
     /**
@@ -47,9 +46,10 @@ public class PosterController {
      * or with status 200 (OK) if the poster has already an ID and was updated.
      */
     @PostMapping(value = "/posters", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<PosterResource> createPoster(@Valid @RequestBody PosterDTO posterDTO) {
-        PosterResource resource  = posterService.create(posterDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resource);
+    public ResponseEntity<PosterDTO> createPoster(@Valid @RequestBody PosterDTO posterDTO) {
+        Poster poster = posterService.create(posterDTO);
+        PosterDTO dto = posterMapper.posterToPosterDTO(poster);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     /**
@@ -61,10 +61,11 @@ public class PosterController {
      * or with status 500 (Internal Server Error) if the posterDTO could not be updated
      */
     @PutMapping(value = "/posters/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<PosterResource> updatePoster(@PathVariable Long id,
-                                                       @Valid @RequestBody PosterDTO posterDTO) {
-        PosterResource resource = posterService.update(id, posterDTO);
-        return ResponseEntity.ok(resource);
+    public ResponseEntity<PosterDTO> updatePoster(@PathVariable Long id,
+                                                  @Valid @RequestBody PosterDTO posterDTO) {
+        Poster client = posterService.update(id, posterDTO);
+        PosterDTO dto = posterMapper.posterToPosterDTO(client);
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -73,9 +74,10 @@ public class PosterController {
      * @return the ResponseEntity with status 200 (OK) and the list of posters in body
      */
     @RequestMapping(value = "/posters", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<PagedResources<PosterResource>> getPosters(@PageableDefault Pageable p) {
-        PagedResources<PosterResource> posters = posterService.getPosters(p.getPageNumber(), p.getPageSize());
-        return ResponseEntity.ok(posters);
+    public ResponseEntity<Page<PosterDTO>> getPosters(@PageableDefault Pageable p) {
+        Page<Poster> posters = posterService.getPosters(p.getPageNumber(), p.getPageSize());
+        Page<PosterDTO> dtos = posters.map(posterMapper::posterToPosterDTO);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
@@ -87,8 +89,10 @@ public class PosterController {
      */
     @RequestMapping(value = "/posters/{id}", method = RequestMethod.GET,
             produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<PosterResource> getPoster(@PathVariable Long id) {
-        return posterService.findOne(id).map(ResponseEntity::ok)
+    public ResponseEntity<PosterDTO> getPoster(@PathVariable Long id) {
+        return posterService.findOne(id)
+                .map(posterMapper::posterToPosterDTO)
+                .map(ResponseEntity::ok)
                 .orElseThrow(() -> new EntityNotFoundException(Poster.class,
                         String.format("poster with id %s not found", id)));
     }

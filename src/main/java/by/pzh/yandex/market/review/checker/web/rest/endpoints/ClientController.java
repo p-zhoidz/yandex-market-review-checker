@@ -4,7 +4,8 @@ import by.pzh.yandex.market.review.checker.commons.exceptions.EntityNotFoundExce
 import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.service.dto.ClientDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ClientService;
-import by.pzh.yandex.market.review.checker.web.rest.resources.ClientResource;
+import by.pzh.yandex.market.review.checker.service.mappers.ClientMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.PagedResources;
@@ -29,10 +30,12 @@ import javax.validation.Valid;
 @RequestMapping("/api")
 public class ClientController {
     private ClientService clientService;
+    private ClientMapper clientMapper;
 
     @Inject
-    public ClientController(ClientService clientService) {
+    public ClientController(ClientService clientService, ClientMapper clientMapper) {
         this.clientService = clientService;
+        this.clientMapper = clientMapper;
     }
 
     /**
@@ -43,9 +46,11 @@ public class ClientController {
      * or with status 422 (Bad Request) if the customer DTO is not valid.
      */
     @PostMapping("/clients")
-    public ResponseEntity<ClientResource> createClient(@Valid @RequestBody ClientDTO clientDTO) {
-        ClientResource resource = clientService.create(clientDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resource);
+    public ResponseEntity<ClientDTO> createClient(@Valid @RequestBody ClientDTO clientDTO) {
+        Client client = clientService.create(clientDTO);
+
+        ClientDTO dto = clientMapper.clientToClientDTO(client);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     /**
@@ -57,10 +62,11 @@ public class ClientController {
      * or with status 500 (Internal Server Error) if the clientDTO could not be updated
      */
     @PutMapping("/clients/{id}")
-    public ResponseEntity<ClientResource> updateClient(@PathVariable Long id,
-                                                       @Valid @RequestBody ClientDTO clientDTO) {
-        ClientResource resource = clientService.update(id, clientDTO);
-        return ResponseEntity.ok(resource);
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id,
+                                                  @Valid @RequestBody ClientDTO clientDTO) {
+        Client client = clientService.update(id, clientDTO);
+        ClientDTO dto = clientMapper.clientToClientDTO(client);
+        return ResponseEntity.ok(dto);
     }
 
 
@@ -70,8 +76,10 @@ public class ClientController {
      * @return the ResponseEntity with status 200 (OK) and the list of customers in body
      */
     @RequestMapping(value = "/clients", method = RequestMethod.GET)
-    public PagedResources<ClientResource> getClients(@PageableDefault Pageable p) {
-        return clientService.getClients(p.getPageNumber(), p.getPageSize());
+    public ResponseEntity<Page<ClientDTO>> getClients(@PageableDefault Pageable p) {
+        Page<Client> clients = clientService.getClients(p.getPageNumber(), p.getPageSize());
+        Page<ClientDTO> dtos = clients.map(clientMapper::clientToClientDTO);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
@@ -81,8 +89,9 @@ public class ClientController {
      * @return the ResponseEntity with status 200 (OK) and with body the customerDTO, or with status 404 (Not Found)
      */
     @RequestMapping(method = RequestMethod.GET, value = "/clients/{id}")
-    public ResponseEntity<ClientResource> getClient(@PathVariable Long id) {
+    public ResponseEntity<ClientDTO> getClient(@PathVariable Long id) {
         return clientService.findOne(id)
+                .map(clientMapper::clientToClientDTO)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new EntityNotFoundException(Client.class,
                         String.format("client with id %s not found", id)));

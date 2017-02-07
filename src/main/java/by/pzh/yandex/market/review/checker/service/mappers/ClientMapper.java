@@ -21,7 +21,7 @@ public interface ClientMapper {
      * @param client entity to be mapped.
      * @return instance of the {@link ClientDTO}.
      */
-   // ClientDTO clientToClientDTO(Client client);
+    ClientDTO clientToClientDTO(Client client);
 
     /**
      * Map list of {@link Client} to list of {@link ClientDTO}.
@@ -29,7 +29,7 @@ public interface ClientMapper {
      * @param clients list of entities to be mapped.
      * @return list of {@link ClientDTO}.
      */
-   // List<ClientDTO> clientsToClientDTOs(List<Client> clients);
+    List<ClientDTO> clientsToClientDTOs(List<Client> clients);
 
     /**
      * Map {@link ClientDTO} to {@link Client}.

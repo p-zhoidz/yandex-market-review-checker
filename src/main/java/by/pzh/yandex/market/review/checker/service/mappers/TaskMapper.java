@@ -31,7 +31,7 @@ public interface TaskMapper {
      * @param tasks list of entities to be mapped.
      * @return list of {@link TaskDTO}.
      */
-  //  List<TaskDTO> tasksToTaskDTOs(List<Task> tasks);
+    List<TaskDTO> tasksToTaskDTOs(List<Task> tasks);
 
     /**
      * Map {@link TaskDTO} to {@link Task}.

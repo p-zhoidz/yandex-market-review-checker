@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PosterDTO implements Serializable {
 
-    private Long number;
+    private Long id;
 
     @NotNull
     private String email;

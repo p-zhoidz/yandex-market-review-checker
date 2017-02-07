@@ -5,16 +5,17 @@ import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
+import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ReportGenerationService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskService;
-import by.pzh.yandex.market.review.checker.web.rest.resources.TaskEntryResource;
-import by.pzh.yandex.market.review.checker.web.rest.resources.TaskResource;
+import by.pzh.yandex.market.review.checker.service.mappers.TaskEntryMapper;
+import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import com.itextpdf.text.DocumentException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,14 +44,18 @@ public class TaskController {
     private TaskService taskService;
     private ReportGenerationService reportGenerationService;
     private TaskEntryService taskEntryService;
-
+    private TaskEntryMapper taskEntryMapper;
+    private TaskMapper taskMapper;
 
     @Inject
     public TaskController(TaskService taskService, ReportGenerationService reportGenerationService,
-                          TaskEntryService taskEntryService) {
+                          TaskEntryService taskEntryService, TaskEntryMapper taskEntryMapper,
+                          TaskMapper taskMapper) {
         this.taskService = taskService;
         this.reportGenerationService = reportGenerationService;
         this.taskEntryService = taskEntryService;
+        this.taskEntryMapper = taskEntryMapper;
+        this.taskMapper = taskMapper;
     }
 
     //// TODO: 30.1.17 Should return statistics over generated data??? +
@@ -79,11 +84,12 @@ public class TaskController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/tasks")
-    public ResponseEntity<TaskResource> createTask(@Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
-        TaskResource resource = taskService.create(taskDTO);
+    public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
+        Task task = taskService.create(taskDTO);
+        TaskDTO dto = taskMapper.taskToTaskDTO(task);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(resource);
+                .body(dto);
     }
 
     /**
@@ -96,12 +102,13 @@ public class TaskController {
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/tasks/{id}")
-    public ResponseEntity<TaskResource> updateTask(
+    public ResponseEntity<TaskDTO> updateTask(
             @PathVariable Long id,
             @Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
 
-        TaskResource resource = taskService.update(id, taskDTO);
-        return ResponseEntity.ok(resource);
+        Task task = taskService.update(id, taskDTO);
+        TaskDTO dto = taskMapper.taskToTaskDTO(task);
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -111,9 +118,10 @@ public class TaskController {
      * @return {@link ResponseEntity} with 200 http status, which contain list of resources.
      */
     @RequestMapping(value = "/tasks", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<PagedResources<TaskResource>> getTasks(@PageableDefault Pageable p) {
-        PagedResources<TaskResource> tasks = taskService.getTasks(p.getPageNumber(), p.getPageSize());
-        return ResponseEntity.ok(tasks);
+    public ResponseEntity<Page<TaskDTO>> getTasks(@PageableDefault Pageable p) {
+        Page<Task> tasks = taskService.getTasks(p.getPageNumber(), p.getPageSize());
+        Page<TaskDTO> dtos = tasks.map(taskMapper::taskToTaskDTO);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
@@ -123,9 +131,10 @@ public class TaskController {
      * @return {@link ResponseEntity} with 200 http status, which contain list of resources.
      */
     @RequestMapping(value = "/tasks/{id}/entries", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<List<TaskEntryResource>> getTaskEntries(@PathVariable Long id) {
-        List<TaskEntryResource> taskEntries = taskEntryService.getTaskEntries(id);
-        return ResponseEntity.ok(taskEntries);
+    public ResponseEntity<List<TaskEntryDTO>> getTaskEntries(@PathVariable Long id) {
+        List<TaskEntry> taskEntries = taskEntryService.getTaskEntries(id);
+        List<TaskEntryDTO> dtos = taskEntryMapper.taskEntriesToTaskEntryDTOs(taskEntries);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
@@ -135,8 +144,10 @@ public class TaskController {
      * @return the ResponseEntity with status 200 (OK) and with body the taskDTO, or with status 404 (Not Found)
      */
     @RequestMapping(value = "/tasks/{id}", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<TaskResource> getTask(@PathVariable Long id) {
-        return taskService.findOne(id).map(ResponseEntity::ok)
+    public ResponseEntity<TaskDTO> getTask(@PathVariable Long id) {
+        return taskService.findOne(id)
+                .map(taskMapper::taskToTaskDTO)
+                .map(ResponseEntity::ok)
                 .orElseThrow(() -> new EntityNotFoundException(Poster.class,
                         String.format("task with id %s not found", id)));
     }
