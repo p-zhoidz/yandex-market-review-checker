@@ -29,6 +29,7 @@ public class TaskResourceAssembler extends ResourceAssemblerSupport<Task, TaskRe
                 .endDate(entity.getEndDate())
                 .comment(entity.getComment())
                 .status(entity.getStatus())
+                .poster(entity.getPoster())
                 .build();
 
         resource.add(linkTo(methodOn(TaskController.class)
