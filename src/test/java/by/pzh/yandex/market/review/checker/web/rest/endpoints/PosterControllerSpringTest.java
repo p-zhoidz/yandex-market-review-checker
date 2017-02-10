@@ -6,20 +6,16 @@ import by.pzh.yandex.market.review.checker.repository.PosterRepository;
 import by.pzh.yandex.market.review.checker.service.dto.PosterDTO;
 import by.pzh.yandex.market.review.checker.service.impl.PosterService;
 import by.pzh.yandex.market.review.checker.service.mappers.PosterMapper;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.PosterResourceAssembler;
 import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
-import by.pzh.yandex.market.review.checker.web.rest.resources.PosterResource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,9 +63,6 @@ public class PosterControllerSpringTest {
     private PosterRepository posterRepository;
 
     @Inject
-    private PosterMapper posterMapper;
-
-    @Inject
     private PosterService posterService;
 
     @Inject
@@ -82,6 +75,9 @@ public class PosterControllerSpringTest {
     private ExceptionTranslator exceptionTranslator;
 
     @Inject
+    private PosterMapper posterMapper;
+
+    @Inject
     private EntityManager em;
 
     private MockMvc restPosterMockMvc;
@@ -91,7 +87,7 @@ public class PosterControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        PosterController posterResource = new PosterController(posterService);
+        PosterController posterResource = new PosterController(posterService, posterMapper);
 
         this.restPosterMockMvc = MockMvcBuilders.standaloneSetup(posterResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)

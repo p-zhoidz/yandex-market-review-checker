@@ -2,6 +2,7 @@ package by.pzh.yandex.market.review.checker.service.mappers;
 
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Report;
+import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.service.dto.ReportDTO;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -22,7 +23,7 @@ public interface ReportMapper {
      * @param report entity to be mapped.
      * @return instance of the {@link ReportDTO}.
      */
-    @Mapping(source = "poster.id", target = "posterId")
+    @Mapping(source = "task.id", target = "taskId")
     ReportDTO reportToReportDTO(Report report);
 
     /**
@@ -40,7 +41,7 @@ public interface ReportMapper {
      * @return instance of the {@link Report}.
      */
     @Named("reportDTOToReport")
-    @Mapping(source = "posterId", target = "poster")
+    @Mapping(source = "taskId", target = "task")
     Report reportDTOToReport(ReportDTO reportDTO);
 
     /**
@@ -51,7 +52,7 @@ public interface ReportMapper {
      * @return instance of the {@link Report}.
      */
     @IterableMapping(qualifiedByName = "reportDTOToReport")
-    @Mapping(source = "posterId", target = "poster")
+    @Mapping(source = "taskId", target = "task")
     @Mapping(target = "id", ignore = true)
     Report reportDTOToNewReport(ReportDTO reportDTO);
 
@@ -69,12 +70,12 @@ public interface ReportMapper {
      * @param id Identifier.
      * @return {@link Poster}.
      */
-    default Poster posterFromId(Long id) {
+    default Task taskFromId(Long id) {
         if (id == null) {
             return null;
         }
-        Poster poster = new Poster();
-        poster.setId(id);
-        return poster;
+        return Task.builder()
+                .id(id)
+                .build();
     }
 }

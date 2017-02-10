@@ -9,6 +9,7 @@ import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ReportGenerationService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
 import by.pzh.yandex.market.review.checker.service.impl.TaskService;
+import by.pzh.yandex.market.review.checker.service.mappers.TaskEntryMapper;
 import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,6 +79,9 @@ public class TaskControllerSpringTest {
     private TaskEntryService taskEntryService;
 
     @Inject
+    private TaskEntryMapper taskEntryMapper;
+
+    @Inject
     private EntityManager em;
 
     private MockMvc restTaskMockMvc;
@@ -87,7 +91,8 @@ public class TaskControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        TaskController taskResource = new TaskController(taskService, reportGenerationService, taskEntryService);
+        TaskController taskResource = new TaskController(taskService, reportGenerationService, taskEntryService,
+                taskEntryMapper, taskMapper);
         this.restTaskMockMvc = MockMvcBuilders.standaloneSetup(taskResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();

@@ -5,6 +5,8 @@ import by.pzh.yandex.market.review.checker.domain.TaskEntry_;
 import by.pzh.yandex.market.review.checker.domain.Task_;
 import org.springframework.data.jpa.domain.Specification;
 
+import javax.persistence.criteria.JoinType;
+
 /**
  * @author p.zhoidz.
  */
@@ -17,15 +19,15 @@ public class TaskSpecifications {
 
     public static Specification<Task> fetchEntriesAndStore() {
         return (root, query, cb) -> {
-            root.fetch(Task_.taskEntries)
-                    .fetch(TaskEntry_.store);
+            root.fetch(Task_.taskEntries, JoinType.LEFT)
+                    .fetch(TaskEntry_.store, JoinType.LEFT);
             return cb.conjunction();
         };
     }
 
     public static Specification<Task> fetchPoster() {
         return (root, query, cb) -> {
-            root.fetch(Task_.poster);
+            root.fetch(Task_.poster, JoinType.LEFT);
             return cb.conjunction();
         };
     }

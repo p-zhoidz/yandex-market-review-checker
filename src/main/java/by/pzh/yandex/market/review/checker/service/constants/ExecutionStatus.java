@@ -13,7 +13,8 @@ public enum ExecutionStatus {
     SUCCESS(2000, "Service successfully executed request."),
     FOUND(2002, "Resource found."),
     UPDATED(2003, "Resource has been updated."),
-    POTENTIAL_CONFLICT(4008, "Resource with specified parameters already exists.");
+    POTENTIAL_CONFLICT(4008, "Resource with specified parameters already exists."),
+    FAILURE(5001, "Unexpected failure");
 
     private final Integer code;
     private final String message;

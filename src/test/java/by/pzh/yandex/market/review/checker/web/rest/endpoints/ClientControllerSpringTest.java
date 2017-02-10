@@ -5,7 +5,7 @@ import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.repository.ClientRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ClientDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ClientService;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.ClientResourceAssembler;
+import by.pzh.yandex.market.review.checker.service.mappers.ClientMapper;
 import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,11 +13,9 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +70,9 @@ public class ClientControllerSpringTest {
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
     @Inject
+    private ClientMapper clientMapper;
+
+    @Inject
     private EntityManager em;
 
     private MockMvc restClientMockMvc;
@@ -81,7 +82,7 @@ public class ClientControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        ClientController customerResource = new ClientController(clientService);
+        ClientController customerResource = new ClientController(clientService, clientMapper);
         this.restClientMockMvc = MockMvcBuilders.standaloneSetup(customerResource)
                 .setControllerAdvice(controllerAdvice)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -250,7 +251,7 @@ public class ClientControllerSpringTest {
                 .comment(client.getComment())
                 .created(client.getCreated())
                 .email(client.getEmail())
-                .number(client.getId())
+                .id(client.getId())
                 .build();
     }
 }

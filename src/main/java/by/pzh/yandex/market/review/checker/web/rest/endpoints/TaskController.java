@@ -60,9 +60,9 @@ public class TaskController {
 
     //// TODO: 30.1.17 Should return statistics over generated data??? +
     @PostMapping("/tasks/distribute")
-    public ResponseEntity<List<TaskEntry>> distribute() {
-        List<Task> distribute = taskService.distribute();
-        return ResponseEntity.ok(distribute.get(0).getTaskEntries());
+    public ResponseEntity<List<Task>> distribute() {
+        List<Task> tasks = taskService.distribute();
+        return ResponseEntity.ok(tasks);
     }
 
     @RequestMapping(value = "/tasks/{id}/report", method = RequestMethod.GET, produces = "application/pdf")

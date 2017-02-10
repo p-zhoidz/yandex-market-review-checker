@@ -1,10 +1,15 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.service.dto.ReportDTO;
+import by.pzh.yandex.market.review.checker.service.impl.CSVService;
 import by.pzh.yandex.market.review.checker.service.impl.ReportService;
+import by.pzh.yandex.market.review.checker.web.rest.endpoints.resp.ResponseWrapper;
+import by.pzh.yandex.market.review.checker.web.rest.validation.annotations.FileExtension;
+import by.pzh.yandex.market.review.checker.web.rest.validation.annotations.NonEmptyFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -31,6 +38,9 @@ public class ReportController {
 
     @Inject
     private ReportService reportService;
+
+    @Inject
+    private CSVService csvService;
 
     /**
      * POST  /reports : Create a new report.
@@ -108,4 +118,15 @@ public class ReportController {
         return ResponseEntity.ok().build();
     }
 
+
+    @PostMapping(value = "/tasks/{id}/upload_report", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadReport(
+            @PathVariable("id") Long taskId,
+            @RequestParam("file") @FileExtension(extensions = {"text/csv", "application/vnd.ms-excel"})
+            @NonEmptyFile MultipartFile file) {
+
+        ResponseWrapper responseWrapper = csvService.parseCSVReport(file, taskId);
+        return ResponseEntity.ok(responseWrapper);
+
+    }
 }

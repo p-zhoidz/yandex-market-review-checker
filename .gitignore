@@ -19,7 +19,7 @@
 ######################
 # Maven
 ######################
-target/
+src/main/resources/i18n/target/
 
 ######################
 # Gradle

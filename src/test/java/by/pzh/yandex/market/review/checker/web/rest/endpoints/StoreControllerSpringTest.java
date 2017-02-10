@@ -7,7 +7,6 @@ import by.pzh.yandex.market.review.checker.repository.StoreRepository;
 import by.pzh.yandex.market.review.checker.service.dto.StoreDTO;
 import by.pzh.yandex.market.review.checker.service.impl.StoreService;
 import by.pzh.yandex.market.review.checker.service.mappers.StoreMapper;
-import by.pzh.yandex.market.review.checker.web.rest.assemblers.StoreResourceAssembler;
 import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,6 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,7 +82,7 @@ public class StoreControllerSpringTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        StoreController storeResource = new StoreController(storeService);
+        StoreController storeResource = new StoreController(storeService, storeMapper);
         this.restStoreMockMvc = MockMvcBuilders.standaloneSetup(storeResource)
                 .setControllerAdvice(exceptionTranslator)
                 .setCustomArgumentResolvers(pageableArgumentResolver)

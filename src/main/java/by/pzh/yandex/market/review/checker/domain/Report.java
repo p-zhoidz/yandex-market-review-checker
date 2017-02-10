@@ -27,7 +27,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "poster")
+@ToString(exclude = "task")
 public class Report implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -41,6 +41,6 @@ public class Report implements Serializable {
     private LocalDate date;
 
     @ManyToOne
-    private Poster poster;
+    private Task task;
 
 }
