@@ -30,7 +30,7 @@ public final class TestDummyObjectsFactory {
     public static Report getReport() {
         return Report.builder()
                 .date(LocalDate.now())
-                .poster(getPoster())
+                .task(getTask())
                 .build();
     }
 

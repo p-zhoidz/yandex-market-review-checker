@@ -76,8 +76,8 @@ public class ClientController {
      */
     @RequestMapping(value = "/clients", method = RequestMethod.GET)
     public ResponseEntity<Page<ClientDTO>> getClients(@PageableDefault Pageable p) {
-        Page<Client> clients = clientService.getClients(p.getPageNumber(), p.getPageSize());
-        Page<ClientDTO> dtos = clients.map(clientMapper::clientToClientDTO);
+        Page<ClientDTO> dtos = clientService.getClients(p.getPageNumber(), p.getPageSize())
+                .map(clientMapper::clientToClientDTO);
         return ResponseEntity.ok(dtos);
     }
 

@@ -8,8 +8,8 @@ import by.pzh.yandex.market.review.checker.service.mappers.PosterMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +27,7 @@ import javax.validation.Valid;
  * REST controller for managing Poster.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class PosterController {
     private PosterService posterService;
     private PosterMapper posterMapper;
@@ -45,7 +45,7 @@ public class PosterController {
      * @return the ResponseEntity with status 201 (Created) and with body the new posterDTO,
      * or with status 200 (OK) if the poster has already an ID and was updated.
      */
-    @PostMapping(value = "/posters", produces = MediaTypes.HAL_JSON_VALUE)
+    @PostMapping(value = "/posters")
     public ResponseEntity<PosterDTO> createPoster(@Valid @RequestBody PosterDTO posterDTO) {
         Poster poster = posterService.create(posterDTO);
         PosterDTO dto = posterMapper.posterToPosterDTO(poster);
@@ -60,7 +60,7 @@ public class PosterController {
      * or with status 422 (Bad Request) if the posterDTO is not valid,
      * or with status 500 (Internal Server Error) if the posterDTO could not be updated
      */
-    @PutMapping(value = "/posters/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @PutMapping(value = "/posters/{id}")
     public ResponseEntity<PosterDTO> updatePoster(@PathVariable Long id,
                                                   @Valid @RequestBody PosterDTO posterDTO) {
         Poster client = posterService.update(id, posterDTO);
@@ -73,10 +73,10 @@ public class PosterController {
      *
      * @return the ResponseEntity with status 200 (OK) and the list of posters in body
      */
-    @RequestMapping(value = "/posters", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/posters", method = RequestMethod.GET)
     public ResponseEntity<Page<PosterDTO>> getPosters(@PageableDefault Pageable p) {
-        Page<Poster> posters = posterService.getPosters(p.getPageNumber(), p.getPageSize());
-        Page<PosterDTO> dtos = posters.map(posterMapper::posterToPosterDTO);
+        Page<PosterDTO> dtos = posterService.getPosters(p.getPageNumber(), p.getPageSize())
+                .map(posterMapper::posterToPosterDTO);
         return ResponseEntity.ok(dtos);
     }
 
@@ -87,8 +87,7 @@ public class PosterController {
      * @return the ResponseEntity with status 200 (OK) and with body the posterDTO,
      * or with status 404 (Not Found)
      */
-    @RequestMapping(value = "/posters/{id}", method = RequestMethod.GET,
-            produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/posters/{id}", method = RequestMethod.GET)
     public ResponseEntity<PosterDTO> getPoster(@PathVariable Long id) {
         return posterService.findOne(id)
                 .map(posterMapper::posterToPosterDTO)

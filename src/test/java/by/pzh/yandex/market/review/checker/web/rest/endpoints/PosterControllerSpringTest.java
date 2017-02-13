@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -128,7 +129,8 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         // Validate the Poster in the database
         List<Poster> posterList = posterRepository.findAll();
@@ -154,7 +156,8 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -173,7 +176,8 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -192,7 +196,8 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -211,7 +216,8 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(post("/api/posters")
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         List<Poster> posterList = posterRepository.findAll();
         assertThat(posterList).hasSize(databaseSizeBeforeTest);
@@ -226,15 +232,23 @@ public class PosterControllerSpringTest {
         // Get all the posterList
         restPosterMockMvc.perform(get("/api/posters"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").value(hasSize(1)))
-                .andExpect(jsonPath("$.content.[*].number").value(hasItem(poster.getId().intValue())))
+                .andExpect(jsonPath("$.content.[*].id").value(hasItem(poster.getId().intValue())))
                 .andExpect(jsonPath("$.content.[*].email").value(hasItem(DEFAULT_EMAIL.toString())))
                 .andExpect(jsonPath("$.content.[*].name").value(hasItem(DEFAULT_NAME.toString())))
                 .andExpect(jsonPath("$.content.[*].rate").value(hasItem(DEFAULT_RATE.doubleValue())))
                 .andExpect(jsonPath("$.content.[*].velocity").value(hasItem(DEFAULT_VELOCITY)))
-                .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())));
+                .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
+                .andExpect(jsonPath("$.last").value("true"))
+                .andExpect(jsonPath("$.totalPages").value("1"))
+                .andExpect(jsonPath("$.totalElements").value("1"))
+                .andExpect(jsonPath("$.sort").value(isEmptyOrNullString()))
+                .andExpect(jsonPath("$.numberOfElements").value("1"))
+                .andExpect(jsonPath("$.first").value("true"))
+                .andExpect(jsonPath("$.size").value("10"))
+                .andExpect(jsonPath("$.number").value("0"));
     }
 
     @Test
@@ -246,8 +260,8 @@ public class PosterControllerSpringTest {
         // Get the poster
         restPosterMockMvc.perform(get("/api/posters/{id}", poster.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
-                .andExpect(jsonPath("$.number").value(poster.getId().intValue()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.id").value(poster.getId().intValue()))
                 .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL.toString()))
                 .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
                 .andExpect(jsonPath("$.rate").value(DEFAULT_RATE.doubleValue()))
@@ -282,7 +296,8 @@ public class PosterControllerSpringTest {
         restPosterMockMvc.perform(put("/api/posters/{id}", updatedPoster.getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(posterDTO)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         // Validate the Poster in the database
         List<Poster> posterList = posterRepository.findAll();

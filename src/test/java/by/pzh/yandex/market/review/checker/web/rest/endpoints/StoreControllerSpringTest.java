@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +29,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -124,7 +126,8 @@ public class StoreControllerSpringTest {
         restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         // Validate the Store in the database
         List<Store> storeList = storeRepository.findAll();
@@ -148,7 +151,8 @@ public class StoreControllerSpringTest {
         restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         List<Store> storeList = storeRepository.findAll();
         assertThat(storeList).hasSize(databaseSizeBeforeTest);
@@ -166,7 +170,8 @@ public class StoreControllerSpringTest {
         restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         List<Store> storeList = storeRepository.findAll();
         assertThat(storeList).hasSize(databaseSizeBeforeTest);
@@ -181,14 +186,22 @@ public class StoreControllerSpringTest {
         // Get all the storeList
         restStoreMockMvc.perform(get("/api/clients/{client-id}/stores", store.getOwner().getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").value(hasSize(1)))
-                .andExpect(jsonPath("$.content.[*].number").value(hasItem(store.getId().intValue())))
+                .andExpect(jsonPath("$.content.[*].id").value(hasItem(store.getId().intValue())))
                 .andExpect(jsonPath("$.content.[*].url").value(hasItem(DEFAULT_STORE_URL.toString())))
                 .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE.booleanValue())))
                 .andExpect(jsonPath("$.content.[*].desiredReviewsNumber").value(hasItem(DEFAULT_DESIRED_REVIEWS_NUMBER)))
-                .andExpect(jsonPath("$.content.[*].created").value(store.getCreated().toString()));
+                .andExpect(jsonPath("$.content.[*].created").value(store.getCreated().toString()))
+                .andExpect(jsonPath("$.last").value("true"))
+                .andExpect(jsonPath("$.totalPages").value("1"))
+                .andExpect(jsonPath("$.totalElements").value("1"))
+                .andExpect(jsonPath("$.sort").value(isEmptyOrNullString()))
+                .andExpect(jsonPath("$.numberOfElements").value("1"))
+                .andExpect(jsonPath("$.first").value("true"))
+                .andExpect(jsonPath("$.size").value("10"))
+                .andExpect(jsonPath("$.number").value("0"));
     }
 
     @Test
@@ -201,8 +214,8 @@ public class StoreControllerSpringTest {
         restStoreMockMvc.perform(get("/api/clients/{client-id}/stores/{id}",
                 store.getOwner().getId(), store.getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
-                .andExpect(jsonPath("$.number").value(store.getId().intValue()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.id").value(store.getId().intValue()))
                 .andExpect(jsonPath("$.url").value(DEFAULT_STORE_URL.toString()))
                 .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE.booleanValue()))
                 .andExpect(jsonPath("$.desiredReviewsNumber").value(DEFAULT_DESIRED_REVIEWS_NUMBER))
@@ -235,7 +248,8 @@ public class StoreControllerSpringTest {
                 store.getOwner().getId(), store.getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(storeDTO)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         // Validate the Store in the database
         List<Store> storeList = storeRepository.findAll();

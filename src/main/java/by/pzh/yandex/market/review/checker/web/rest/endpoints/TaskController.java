@@ -1,7 +1,5 @@
 package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
-import by.pzh.yandex.market.review.checker.commons.exceptions.EntityNotFoundException;
-import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
@@ -15,7 +13,6 @@ import com.itextpdf.text.DocumentException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,7 +36,7 @@ import java.util.List;
  * REST controller for managing Task.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class TaskController {
     private TaskService taskService;
     private ReportGenerationService reportGenerationService;
@@ -98,13 +95,13 @@ public class TaskController {
      * @param taskDTO the taskDTO to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated taskDTO,
      * or with status 422 (Bad Request) if the taskDTO is not valid,
-     * or with status 500 (Internal Server Error) if the taskDTO couldnt be updated
+     * or with status 500 (Internal Server Error) if the taskDTO could not be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/tasks/{id}")
     public ResponseEntity<TaskDTO> updateTask(
             @PathVariable Long id,
-            @Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
+            @Valid @RequestBody TaskDTO taskDTO) {
 
         Task task = taskService.update(id, taskDTO);
         TaskDTO dto = taskMapper.taskToTaskDTO(task);
@@ -117,7 +114,7 @@ public class TaskController {
      * @param p pageable params.
      * @return {@link ResponseEntity} with 200 http status, which contain list of resources.
      */
-    @RequestMapping(value = "/tasks", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/tasks", method = RequestMethod.GET)
     public ResponseEntity<Page<TaskDTO>> getTasks(@PageableDefault Pageable p) {
         Page<Task> tasks = taskService.getTasks(p.getPageNumber(), p.getPageSize());
         Page<TaskDTO> dtos = tasks.map(taskMapper::taskToTaskDTO);
@@ -130,7 +127,7 @@ public class TaskController {
      * @param id task identifier.
      * @return {@link ResponseEntity} with 200 http status, which contain list of resources.
      */
-    @RequestMapping(value = "/tasks/{id}/entries", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/tasks/{id}/entries", method = RequestMethod.GET)
     public ResponseEntity<List<TaskEntryDTO>> getTaskEntries(@PathVariable Long id) {
         List<TaskEntry> taskEntries = taskEntryService.getTaskEntries(id);
         List<TaskEntryDTO> dtos = taskEntryMapper.taskEntriesToTaskEntryDTOs(taskEntries);
@@ -143,13 +140,12 @@ public class TaskController {
      * @param id the id of the taskDTO to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the taskDTO, or with status 404 (Not Found)
      */
-    @RequestMapping(value = "/tasks/{id}", method = RequestMethod.GET, produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<TaskDTO> getTask(@PathVariable Long id) {
+    @RequestMapping(value = "/tasks/{id}", method = RequestMethod.GET)
+    public ResponseEntity getTask(@PathVariable Long id) {
         return taskService.findOne(id)
                 .map(taskMapper::taskToTaskDTO)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new EntityNotFoundException(Poster.class,
-                        String.format("task with id %s not found", id)));
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**

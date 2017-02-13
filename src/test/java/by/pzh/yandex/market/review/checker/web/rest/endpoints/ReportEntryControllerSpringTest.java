@@ -3,6 +3,7 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
 import by.pzh.yandex.market.review.checker.domain.Report;
 import by.pzh.yandex.market.review.checker.domain.ReportEntry;
+import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.enums.ReportStatus;
 import by.pzh.yandex.market.review.checker.repository.ReportEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ReportEntryDTO;
@@ -58,9 +59,6 @@ public class ReportEntryControllerSpringTest {
     private ReportEntryRepository reportEntryRepository;
 
     @Inject
-    private ReportEntryMapper reportEntryMapper;
-
-    @Inject
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Inject
@@ -91,7 +89,9 @@ public class ReportEntryControllerSpringTest {
      */
     public static ReportEntry createEntity(EntityManager em) {
         Report report = TestDummyObjectsFactory.getReport();
-        em.persist(report.getPoster());
+        Task task = report.getTask();
+        em.persist(task.getPoster());
+        em.persist(task);
         em.persist(report);
 
         return ReportEntry.builder()

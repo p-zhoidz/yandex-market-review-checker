@@ -99,7 +99,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="poster_id" type="bigint">
+            <column name="task_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
 
@@ -188,11 +188,11 @@
 
     <changeSet id="201701112357" author="p.zhoidz">
 
-        <addForeignKeyConstraint baseColumnNames="poster_id"
+        <addForeignKeyConstraint baseColumnNames="task_id"
                                  baseTableName="reports"
-                                 constraintName="fk_report_poster_id"
+                                 constraintName="fk_report_task_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="posters"/>
+                                 referencedTableName="tasks"/>
 
     </changeSet>
 

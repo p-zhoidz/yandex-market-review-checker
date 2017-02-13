@@ -3,6 +3,7 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 import by.pzh.yandex.market.review.checker.ApplicationTestContext;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Report;
+import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.repository.ReportRepository;
 import by.pzh.yandex.market.review.checker.service.dto.ReportDTO;
 import by.pzh.yandex.market.review.checker.service.impl.ReportService;
@@ -88,11 +89,12 @@ public class ReportControllerSpringTest {
      * if they test an entity which requires the current entity.
      */
     public static Report createEntity(EntityManager em) {
-        Poster poster = TestDummyObjectsFactory.getPoster();
-        em.persist(poster);
+        Task task = TestDummyObjectsFactory.getTask();
+        em.persist(task.getPoster());
+        em.persist(task);
 
         return Report.builder()
-                .poster(poster)
+                .task(task)
                 .date(DEFAULT_DATE)
                 .build();
     }

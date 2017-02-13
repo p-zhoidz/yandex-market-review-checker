@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -120,7 +122,8 @@ public class ClientControllerSpringTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(clientDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.number").value(notNullValue()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.id").value(notNullValue()))
                 .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
                 .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE))
                 .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT))
@@ -159,16 +162,25 @@ public class ClientControllerSpringTest {
         clientRepository.saveAndFlush(client);
 
         // Get all the customerList
-        restClientMockMvc.perform(get("/api/clients?page=0"))
-                .andExpect(status().isOk())
+        ResultActions perform = restClientMockMvc.perform(get("/api/clients?page=0"));
+        perform.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").value(hasSize(1)))
-                .andExpect(jsonPath("$.content.[*].number").value(hasItem(client.getId().intValue())))
+                .andExpect(jsonPath("$.content.[*].id").value(hasItem(client.getId().intValue())))
                 .andExpect(jsonPath("$.content.[*].email").value(hasItem(DEFAULT_EMAIL)))
                 .andExpect(jsonPath("$.content.[*].active").value(hasItem(DEFAULT_ACTIVE)))
                 .andExpect(jsonPath("$.content.[*].comment").value(hasItem(DEFAULT_COMMENT)))
-                .andExpect(jsonPath("$.content.[*].created").value(client.getCreated().toString()));
+                .andExpect(jsonPath("$.content.[*].created").value(client.getCreated().toString()))
+                .andExpect(jsonPath("$.last").value("true"))
+                .andExpect(jsonPath("$.totalPages").value("1"))
+                .andExpect(jsonPath("$.totalElements").value("1"))
+                .andExpect(jsonPath("$.sort").value(isEmptyOrNullString()))
+                .andExpect(jsonPath("$.numberOfElements").value("1"))
+                .andExpect(jsonPath("$.first").value("true"))
+                .andExpect(jsonPath("$.size").value("10"))
+                .andExpect(jsonPath("$.number").value("0"));
+
 
     }
 
@@ -181,7 +193,8 @@ public class ClientControllerSpringTest {
         // Get the client
         restClientMockMvc.perform(get("/api/clients/{id}", client.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.number").value(client.getId()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.id").value(client.getId()))
                 .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
                 .andExpect(jsonPath("$.active").value(DEFAULT_ACTIVE))
                 .andExpect(jsonPath("$.comment").value(DEFAULT_COMMENT))
@@ -215,7 +228,8 @@ public class ClientControllerSpringTest {
         restClientMockMvc.perform(put("/api/clients/{id}", client.getId())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(updatedClientDTO)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
         // Validate the Client in the database
         List<Client> clientList = clientRepository.findAll();

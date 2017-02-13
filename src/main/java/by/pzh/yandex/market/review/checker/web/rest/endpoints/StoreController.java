@@ -28,7 +28,7 @@ import javax.validation.Valid;
  * REST controller for managing Store.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class StoreController {
 
     private StoreService storeService;
@@ -48,7 +48,7 @@ public class StoreController {
      * or with status 200 (OK) if the store has already an ID and was updated.
      */
     @RequestMapping(value = "/clients/{client-id}/stores", method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaTypes.HAL_JSON_VALUE)
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<StoreDTO> createStore(@PathVariable("client-id") Long clientId,
                                                 @Valid @RequestBody StoreDTO storeDTO) {
         Store store = storeService.create(clientId, storeDTO);
@@ -64,7 +64,7 @@ public class StoreController {
      * or with status 422 (Bad Request) if the storeDTO is not valid,
      * or with status 500 (Internal Server Error) if the storeDTO could not be updated
      */
-    @PutMapping(value = "/clients/{client-id}/stores/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @PutMapping(value = "/clients/{client-id}/stores/{id}")
     public ResponseEntity<StoreDTO> updateStore(@PathVariable Long id,
                                                 @PathVariable("client-id") Long clientID,
                                                 @Valid @RequestBody StoreDTO storeDTO) {
@@ -78,8 +78,7 @@ public class StoreController {
      *
      * @return the ResponseEntity with status 200 (OK) and the list of stores in body
      */
-    @RequestMapping(value = "/clients/{client-id}/stores", method = RequestMethod.GET,
-            produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/clients/{client-id}/stores", method = RequestMethod.GET)
     public ResponseEntity<Page<StoreDTO>> getClientStores(@PathVariable("client-id") long clientId,
                                                           @PageableDefault Pageable p) {
         Page<Store> customerStores = storeService.getCustomerStores(clientId,
@@ -94,8 +93,7 @@ public class StoreController {
      * @param id the id of the storeDTO to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the storeDTO, or with status 404 (Not Found)
      */
-    @RequestMapping(value = "/clients/{client-id}/stores/{id}", method = RequestMethod.GET,
-            produces = MediaTypes.HAL_JSON_VALUE)
+    @RequestMapping(value = "/clients/{client-id}/stores/{id}", method = RequestMethod.GET)
     public ResponseEntity<StoreDTO> getStore(@PathVariable("client-id") Long clientId,
                                              @PathVariable("id") Long id) {
         return storeService.findOne(id)
