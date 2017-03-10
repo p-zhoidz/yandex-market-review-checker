@@ -89,6 +89,8 @@ public class StoreControllerSpringTest {
                 .setControllerAdvice(exceptionTranslator)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setMessageConverters(jacksonMessageConverter).build();
+
+        //ыфловрлфырвлы
     }
 
     /**
