@@ -167,6 +167,8 @@ public class StoreControllerSpringTest {
         // set the field null
         store.setDesiredReviewsNumber(null);
 
+
+        //ыфвыфвы
         // Create the Store, which fails.
         StoreDTO storeDTO = storeMapper.storeToStoreDTO(store);
         restStoreMockMvc.perform(post("/api/clients/{client-id}/stores", store.getOwner().getId())
