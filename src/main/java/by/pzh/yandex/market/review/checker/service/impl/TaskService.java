@@ -29,8 +29,6 @@ import static java.util.stream.Collectors.toList;
 public class TaskService {
     private TaskRepository taskRepository;
     private TaskMapper taskMapper;
-    private TaskDistributionService taskDistributionService;
-    private TaskEntryRepository taskEntryRepository;
 
     /**
      * Parametrized constructor.
@@ -39,25 +37,9 @@ public class TaskService {
      * @param taskMapper     task mapper instance.
      */
     @Inject
-    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
-                       TaskDistributionService taskDistributionService, TaskEntryRepository taskEntryRepository) {
+    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
-        this.taskDistributionService = taskDistributionService;
-        this.taskEntryRepository = taskEntryRepository;
-    }
-
-    public List<Task> distribute() {
-        List<Task> tasks = taskDistributionService.distribute();
-        taskRepository.save(tasks);
-
-        List<TaskEntry> entries = tasks.stream()
-                .map(Task::getTaskEntries)
-                .flatMap(Collection::stream)
-                .collect(toList());
-
-        taskEntryRepository.save(entries);
-        return tasks;
     }
 
     /**
@@ -93,9 +75,10 @@ public class TaskService {
      * @return {@link Page} of tasks based on provided params.
      */
     @Transactional(readOnly = true)
-    public Page<Task> getTasks(int page, int size) {
+    public Page<TaskDTO> getTasks(int page, int size) {
         Pageable pageable = new PageRequest(page, size);
-        return taskRepository.findAll(pageable);
+        return taskRepository.findAll(pageable)
+                .map(taskMapper::taskToTaskDTO);
     }
 
     /**

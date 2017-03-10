@@ -13,6 +13,7 @@ import com.itextpdf.text.DocumentException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,12 +25,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -55,16 +59,14 @@ public class TaskController {
         this.taskMapper = taskMapper;
     }
 
-    //// TODO: 30.1.17 Should return statistics over generated data??? +
-    @PostMapping("/tasks/distribute")
-    public ResponseEntity<List<Task>> distribute() {
-        List<Task> tasks = taskService.distribute();
-        return ResponseEntity.ok(tasks);
-    }
-
     @RequestMapping(value = "/tasks/{id}/report", method = RequestMethod.GET, produces = "application/pdf")
-    public ResponseEntity generateReport(@PathVariable Long id) throws DocumentException, IOException {
-        byte[] bytes = reportGenerationService.generatePDF(id);
+    public ResponseEntity generateReport(@PathVariable Long id,
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                         @RequestParam LocalDate startDate,
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                         @RequestParam LocalDate endDate) throws DocumentException, IOException {
+
+        byte[] bytes = reportGenerationService.generatePDF(id, startDate, endDate);
 
         return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/pdf"))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
@@ -96,7 +98,6 @@ public class TaskController {
      * @return the ResponseEntity with status 200 (OK) and with body the updated taskDTO,
      * or with status 422 (Bad Request) if the taskDTO is not valid,
      * or with status 500 (Internal Server Error) if the taskDTO could not be updated
-     * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/tasks/{id}")
     public ResponseEntity<TaskDTO> updateTask(
@@ -116,9 +117,8 @@ public class TaskController {
      */
     @RequestMapping(value = "/tasks", method = RequestMethod.GET)
     public ResponseEntity<Page<TaskDTO>> getTasks(@PageableDefault Pageable p) {
-        Page<Task> tasks = taskService.getTasks(p.getPageNumber(), p.getPageSize());
-        Page<TaskDTO> dtos = tasks.map(taskMapper::taskToTaskDTO);
-        return ResponseEntity.ok(dtos);
+        Page<TaskDTO> tasks = taskService.getTasks(p.getPageNumber(), p.getPageSize());
+        return ResponseEntity.ok(tasks);
     }
 
     /**

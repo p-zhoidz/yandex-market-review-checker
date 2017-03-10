@@ -167,11 +167,12 @@
             <column name="store_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-
             <column name="task_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-
+            <column name="status" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
     </changeSet>
@@ -239,6 +240,13 @@
                                  constraintName="fk_report_entry_task_id"
                                  referencedColumnNames="id"
                                  referencedTableName="task_entries"/>
+    </changeSet>
+
+    <changeSet id="201702021942" author="p.zhoidz">
+
+        <addColumn tableName="task_entries">
+            <column name="text" type="text" />
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

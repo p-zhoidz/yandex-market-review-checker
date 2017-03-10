@@ -4,32 +4,21 @@ import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
+import by.pzh.yandex.market.review.checker.domain.enums.TaskEntryStatus;
+import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
 import by.pzh.yandex.market.review.checker.repository.PosterRepository;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
+import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
+import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.repository.specifications.StoreSpecifications;
-import com.itextpdf.text.Anchor;
-import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chapter;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.Section;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
+import by.pzh.yandex.market.review.checker.service.dto.TaskGenerationDTO;
+import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -48,15 +37,24 @@ import static org.springframework.data.jpa.domain.Specifications.where;
  * @author p.zhoidz.
  */
 @Component
+@Transactional
 public class TaskDistributionService {
     private PosterRepository posterRepository;
     private StoreRepository storeRepository;
+    private TaskRepository taskRepository;
+    private TaskEntryRepository taskEntryRepository;
+    private TaskMapper taskMapper;
 
 
     @Inject
-    public TaskDistributionService(PosterRepository posterRepository, StoreRepository storeRepository) {
+    public TaskDistributionService(PosterRepository posterRepository, StoreRepository storeRepository,
+                                   TaskRepository taskRepository, TaskEntryRepository taskEntryRepository,
+                                   TaskMapper taskMapper) {
         this.posterRepository = posterRepository;
         this.storeRepository = storeRepository;
+        this.taskRepository = taskRepository;
+        this.taskEntryRepository = taskEntryRepository;
+        this.taskMapper = taskMapper;
     }
 
     /**
@@ -64,12 +62,35 @@ public class TaskDistributionService {
      *
      * @return List of distributed tasks.
      */
-    @Transactional(propagation = Propagation.NEVER)
-    public List<Task> distribute() {
+    public TaskGenerationDTO distribute() {
 
         List<Store> stores = storeRepository.findAll(where(StoreSpecifications.filterActive()));
         List<PosterDataHolder> posters = posterRepository.getPosters();
 
+        List<Task> tasks = generateTasks(stores, posters);
+
+        save(tasks);
+        List<TaskDTO> taskDTOs = taskMapper.tasksToTaskDTOs(tasks);
+        long totalAmount = calculateTotalAmount(tasks);
+        long totalRequired = calculateTotalRequired(stores);
+
+        return new TaskGenerationDTO(taskDTOs, totalAmount, totalRequired);
+    }
+
+    private long calculateTotalAmount(List<Task> tasks) {
+        return tasks.stream()
+                .map(Task::getTaskEntries)
+                .flatMap(Collection::stream)
+                .count();
+    }
+
+    private long calculateTotalRequired(List<Store> stores) {
+        return stores.stream()
+                .mapToLong(Store::getDesiredReviewsNumber)
+                .sum();
+    }
+
+    private List<Task> generateTasks(List<Store> stores, List<PosterDataHolder> posters) {
         return stores
                 .parallelStream()
                 .map(store -> getReviewRequests(store, posters, store.getDesiredReviewsNumber()))
@@ -78,9 +99,11 @@ public class TaskDistributionService {
                                 .poster(o.poster)
                                 .startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plus(1, ChronoUnit.WEEKS))
+                                .status(TaskStatus.OPEN)
                                 .build(),
                         HashMap::new,
                         mapping(o -> TaskEntry.builder()
+                                        .status(TaskEntryStatus.OPEN)
                                         .store(o.store)
                                         .build(),
                                 toList())))
@@ -96,6 +119,17 @@ public class TaskDistributionService {
                 }).collect(toList());
     }
 
+    //TODO check batch saving
+    private void save(List<Task> tasks) {
+        taskRepository.save(tasks);
+
+        List<TaskEntry> entries = tasks.stream()
+                .map(Task::getTaskEntries)
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        taskEntryRepository.save(entries);
+    }
 
     /**
      * Recursively distribute tasks across posters.
@@ -115,7 +149,7 @@ public class TaskDistributionService {
                                 .compareTo(o2.reviews.get(store.getId()))))
                 .collect(toList())
                 .stream()
-                .filter(posterDataHolder -> posterDataHolder.velocity.getAndDecrement() >= 0)
+                .filter(posterDataHolder -> posterDataHolder.velocity.decrementAndGet() >= 0)
                 .limit(limit)
                 .collect(toList());
 

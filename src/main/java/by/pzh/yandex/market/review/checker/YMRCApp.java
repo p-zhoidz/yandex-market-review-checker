@@ -1,8 +1,9 @@
 package by.pzh.yandex.market.review.checker;
 
-import by.pzh.yandex.market.review.checker.config.ApplicationProperties;
+import by.pzh.yandex.market.review.checker.config.settings.ApplicationProperties;
 import by.pzh.yandex.market.review.checker.config.Constants;
 import by.pzh.yandex.market.review.checker.config.LiquibaseConfiguration;
+import by.pzh.yandex.market.review.checker.config.settings.WebDriverSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -28,7 +29,7 @@ import java.util.Collection;
 @ComponentScan(excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = LiquibaseConfiguration.class)})
 @EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class})
-@EnableConfigurationProperties({ApplicationProperties.class})
+@EnableConfigurationProperties({ApplicationProperties.class, WebDriverSettings.class})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class YMRCApp extends WebMvcConfigurerAdapter {
 

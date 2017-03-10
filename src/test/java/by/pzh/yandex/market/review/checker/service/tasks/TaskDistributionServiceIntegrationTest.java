@@ -4,9 +4,14 @@ import by.pzh.yandex.market.review.checker.ApplicationTestContext;
 import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Store;
-import by.pzh.yandex.market.review.checker.domain.Task;
+import by.pzh.yandex.market.review.checker.domain.TaskEntry;
 import by.pzh.yandex.market.review.checker.repository.PosterRepository;
 import by.pzh.yandex.market.review.checker.repository.StoreRepository;
+import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
+import by.pzh.yandex.market.review.checker.repository.TaskRepository;
+import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
+import by.pzh.yandex.market.review.checker.service.dto.TaskGenerationDTO;
+import by.pzh.yandex.market.review.checker.service.mappers.TaskMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,9 +24,11 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
+import static by.pzh.yandex.market.review.checker.repository.specifications.TaskEntrySpecifications.filterTaskId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.data.jpa.domain.Specifications.where;
 
 /**
  * @author p.zhoidz.
@@ -38,13 +45,23 @@ public class TaskDistributionServiceIntegrationTest {
     private StoreRepository storeRepository;
 
     @Inject
+    private TaskRepository taskRepository;
+
+    @Inject
+    private TaskEntryRepository taskEntryRepository;
+
+    @Inject
+    private TaskMapper taskMapper;
+
+    @Inject
     private EntityManager em;
 
     private TaskDistributionService sut;
 
     @Before
     public void setUp() throws Exception {
-        sut = new TaskDistributionService(posterRepository, storeRepository);
+        sut = new TaskDistributionService(posterRepository, storeRepository, taskRepository,
+                taskEntryRepository, taskMapper);
     }
 
     @Test
@@ -83,24 +100,36 @@ public class TaskDistributionServiceIntegrationTest {
         em.persist(client);
         em.persist(store);
 
-        List<Task> result = sut.distribute();
+        TaskGenerationDTO distributionResult = sut.distribute();
+        List<TaskDTO> result = distributionResult.getTasks();
 
-        Optional<Task> firstPosterTaskOpt = result.stream()
-                .filter(e -> e.getPoster().getId().equals(poster1.getId()))
+        Optional<TaskDTO> firstPosterTaskOpt = result.stream()
+                .filter(e -> e.getPosterId().equals(poster1.getId()))
                 .findFirst();
 
-        Optional<Task> secondPosterTaskOpt = result.stream()
-                .filter(e -> e.getPoster().getId().equals(poster2.getId()))
+        Optional<TaskDTO> secondPosterTaskOpt = result.stream()
+                .filter(e -> e.getPosterId().equals(poster2.getId()))
                 .findFirst();
 
         assertEquals(2, result.size());
         assertTrue(firstPosterTaskOpt.isPresent());
-        Task task = firstPosterTaskOpt.get();
-        assertEquals(1, task.getTaskEntries().size());
+        TaskDTO task = firstPosterTaskOpt.get();
+
+        List<TaskEntry> taskEntries1 = taskEntryRepository
+                .findAll(where(filterTaskId(task.getId())));
+
+        assertEquals(1, taskEntries1.size());
 
         assertTrue(secondPosterTaskOpt.isPresent());
-        Task task2 = secondPosterTaskOpt.get();
-        assertEquals(2, task2.getTaskEntries().size());
+        TaskDTO task2 = secondPosterTaskOpt.get();
+
+        List<TaskEntry> taskEntries2 = taskEntryRepository
+                .findAll(where(filterTaskId(task2.getId())));
+
+        assertEquals(2, taskEntries2.size());
+
+        assertEquals(3, distributionResult.getRequired());
+        assertEquals(3, distributionResult.getTotal());
     }
 
     @Test
@@ -130,16 +159,23 @@ public class TaskDistributionServiceIntegrationTest {
         em.persist(client);
         em.persist(store);
 
-        List<Task> result = sut.distribute();
+        TaskGenerationDTO distributionResult = sut.distribute();
+        List<TaskDTO> result = distributionResult.getTasks();
 
-        Optional<Task> firstPosterTaskOpt = result.stream()
-                .filter(e -> e.getPoster().getId().equals(poster1.getId()))
+        Optional<TaskDTO> firstPosterTaskOpt = result.stream()
+                .filter(e -> e.getPosterId().equals(poster1.getId()))
                 .findFirst();
 
         assertEquals(1, result.size());
         assertTrue(firstPosterTaskOpt.isPresent());
-        Task task = firstPosterTaskOpt.get();
-        assertEquals(4, task.getTaskEntries().size());
+        TaskDTO task = firstPosterTaskOpt.get();
+
+        List<TaskEntry> taskEntries = taskEntryRepository
+                .findAll(where(filterTaskId(task.getId())));
+        assertEquals(4, taskEntries.size());
+
+        assertEquals(4, distributionResult.getRequired());
+        assertEquals(4, distributionResult.getTotal());
     }
 
     @Test
@@ -160,8 +196,10 @@ public class TaskDistributionServiceIntegrationTest {
         em.persist(client);
         em.persist(store);
 
-        List<Task> result = sut.distribute();
-        assertEquals(0, result.size());
+        TaskGenerationDTO result = sut.distribute();
+        assertEquals(0, result.getTasks().size());
+        assertEquals(3, result.getRequired());
+        assertEquals(0, result.getTotal());
     }
 
     @Test
@@ -172,7 +210,7 @@ public class TaskDistributionServiceIntegrationTest {
                 .email("test")
                 .name("name")
                 .rate(34.0)
-                .velocity(14)
+                .velocity(2)
                 .build();
 
         Poster poster2 = Poster.builder()
@@ -200,21 +238,29 @@ public class TaskDistributionServiceIntegrationTest {
         em.persist(client);
         em.persist(store);
 
-        List<Task> result = sut.distribute();
+        TaskGenerationDTO distributionResult = sut.distribute();
+        List<TaskDTO> result = distributionResult.getTasks();
 
-        Optional<Task> firstPosterTaskOpt = result.stream()
-                .filter(e -> e.getPoster().getId().equals(poster1.getId()))
+        Optional<TaskDTO> firstPosterTaskOpt = result.stream()
+                .filter(e -> e.getPosterId().equals(poster1.getId()))
                 .findFirst();
 
-        Optional<Task> secondPosterTaskOpt = result.stream()
-                .filter(e -> e.getPoster().getId().equals(poster2.getId()))
+        Optional<TaskDTO> secondPosterTaskOpt = result.stream()
+                .filter(e -> e.getPosterId().equals(poster2.getId()))
                 .findFirst();
 
         assertEquals(1, result.size());
         assertTrue(firstPosterTaskOpt.isPresent());
         assertFalse(secondPosterTaskOpt.isPresent());
-        Task task = firstPosterTaskOpt.get();
-        assertEquals(4, task.getTaskEntries().size());
+        TaskDTO task = firstPosterTaskOpt.get();
+
+        List<TaskEntry> taskEntries = taskEntryRepository
+                .findAll(where(filterTaskId(task.getId())));
+
+        assertEquals(2, taskEntries.size());
+
+        assertEquals(4, distributionResult.getRequired());
+        assertEquals(2, distributionResult.getTotal());
     }
 
     @Test
@@ -252,18 +298,28 @@ public class TaskDistributionServiceIntegrationTest {
         em.persist(store1);
         em.persist(store2);
 
-        List<Task> result = sut.distribute();
+        TaskGenerationDTO distributionResult = sut.distribute();
 
-        Optional<Task> firstPosterTaskOpt = result.stream()
-                .filter(e -> e.getPoster().getId().equals(poster1.getId()))
+        List<TaskDTO> result = distributionResult.getTasks();
+
+        Optional<TaskDTO> firstPosterTaskOpt = result.stream()
+                .filter(e -> e.getPosterId().equals(poster1.getId()))
                 .findFirst();
 
         assertEquals(1, result.size());
         assertTrue(firstPosterTaskOpt.isPresent());
-        Task task = firstPosterTaskOpt.get();
-        task.getTaskEntries().forEach(te -> assertEquals(store1.getId(), te.getStore().getId()));
+        TaskDTO task = firstPosterTaskOpt.get();
 
-        assertEquals(4, task.getTaskEntries().size());
+        List<TaskEntry> taskEntries = taskEntryRepository
+                .findAll(where(filterTaskId(task.getId())));
+
+
+        taskEntries.forEach(te -> assertEquals(store1.getId(), te.getStore().getId()));
+
+        assertEquals(4, taskEntries.size());
+
+        assertEquals(4, distributionResult.getRequired());
+        assertEquals(4, distributionResult.getTotal());
     }
 
 }

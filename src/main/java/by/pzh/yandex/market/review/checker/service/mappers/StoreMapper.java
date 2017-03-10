@@ -39,7 +39,7 @@ public interface StoreMapper {
      * @param storeDTO entity to be mapped.
      * @return instance of the {@link Store}.
      */
-    @Named("storeDTOToStore")
+    //@Named("storeDTOToStore")
     @Mapping(source = "ownerId", target = "owner")
     Store storeDTOToStore(StoreDTO storeDTO);
 

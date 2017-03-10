@@ -1,6 +1,7 @@
 package by.pzh.yandex.market.review.checker.config;
 
 import by.pzh.yandex.market.review.checker.async.ExceptionHandlingAsyncTaskExecutor;
+import by.pzh.yandex.market.review.checker.config.settings.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;

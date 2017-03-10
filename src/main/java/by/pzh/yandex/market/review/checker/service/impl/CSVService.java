@@ -1,11 +1,8 @@
 package by.pzh.yandex.market.review.checker.service.impl;
 
-import by.pzh.yandex.market.review.checker.domain.Report;
-import by.pzh.yandex.market.review.checker.domain.ReportEntry;
 import by.pzh.yandex.market.review.checker.domain.Task;
-import by.pzh.yandex.market.review.checker.domain.enums.ReportStatus;
-import by.pzh.yandex.market.review.checker.repository.ReportEntryRepository;
-import by.pzh.yandex.market.review.checker.repository.ReportRepository;
+import by.pzh.yandex.market.review.checker.domain.TaskEntry;
+import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.repository.TaskRepository;
 import by.pzh.yandex.market.review.checker.service.constants.ExecutionStatus;
 import by.pzh.yandex.market.review.checker.service.dto.CSVTaskDTO;
@@ -21,12 +18,10 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static by.pzh.yandex.market.review.checker.repository.specifications.TaskSpecifications.fetchEntriesAndStore;
 import static by.pzh.yandex.market.review.checker.repository.specifications.TaskSpecifications.fetchPoster;
@@ -42,15 +37,12 @@ import static org.springframework.data.jpa.domain.Specifications.where;
 public class CSVService {
 
     private TaskRepository taskRepository;
-    private ReportRepository reportRepository;
-    private ReportEntryRepository reportEntryRepository;
+    private TaskEntryRepository taskEntryRepository;
 
     @Inject
-    public CSVService(TaskRepository taskRepository, ReportRepository reportRepository,
-                      ReportEntryRepository reportEntryRepository) {
+    public CSVService(TaskRepository taskRepository, TaskEntryRepository taskEntryRepository) {
         this.taskRepository = taskRepository;
-        this.reportRepository = reportRepository;
-        this.reportEntryRepository = reportEntryRepository;
+        this.taskEntryRepository = taskEntryRepository;
     }
 
     @Transactional(readOnly = true)
@@ -66,11 +58,10 @@ public class CSVService {
             Task task = taskRepository.findOne(where(filterById(id))
                     .and(fetchEntriesAndStore())
                     .and(fetchPoster()));
-            AtomicInteger ai = new AtomicInteger(1);
 
             List<CSVTaskRow> rows = task.getTaskEntries()
                     .stream()
-                    .map(taskEntry -> new CSVTaskRow(ai.getAndIncrement(), taskEntry.getStore().getUrl()))
+                    .map(taskEntry -> new CSVTaskRow(taskEntry.getId(), taskEntry.getStore().getUrl()))
                     .collect(toList());
 
             p.printRecords(rows);
@@ -95,29 +86,25 @@ public class CSVService {
 
             Task task = taskRepository.getOne(taskId);
 
-            Report report = Report.builder()
-                    .task(task)
-                    .date(LocalDate.now())
-                    .build();
 
             String[] headers = getTaskHeader();
 
-            List<ReportEntry> entries = new CSVParser(reader,
+            List<Task> collect = new CSVParser(reader,
                     CSVFormat.INFORMIX_UNLOAD_CSV.withHeader(headers))
                     .getRecords()
                     .stream()
                     .skip(1)
-                    .map(record ->
-                            ReportEntry.builder()
-                                    .report(report)
-                                    .status(ReportStatus.NOT_VERIFIED)
-                                    .text(record.get(headers[2]))
-                                    .build())
+                    .map(record -> {
+                        TaskEntry taskEntry = taskEntryRepository.getOne(Long.valueOf(record.get(headers[0])));
+                        taskEntry.setText(record.get(headers[2]));
+                        return task;
+                    })
                     .collect(toList());
 
-            reportRepository.save(report);
-            reportEntryRepository.save(entries);
-            return new ResponseWrapper(report, ExecutionStatus.SUCCESS);
+
+            taskRepository.save(collect);
+
+            return new ResponseWrapper(ExecutionStatus.SUCCESS);
         } catch (IOException e) {
             return new ResponseWrapper(e, ExecutionStatus.FAILURE);
         }
@@ -130,10 +117,10 @@ public class CSVService {
     }
 
     private static class CSVTaskRow implements Iterable<Object> {
-        private Integer number;
+        private Long number;
         private String storeUrl;
 
-        CSVTaskRow(int number, String storeUrl) {
+        CSVTaskRow(long number, String storeUrl) {
             this.number = number;
             this.storeUrl = storeUrl;
         }

@@ -6,6 +6,7 @@ import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
+import by.pzh.yandex.market.review.checker.domain.enums.TaskEntryStatus;
 import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
 import by.pzh.yandex.market.review.checker.service.impl.CSVService;
 import by.pzh.yandex.market.review.checker.web.rest.errors.ExceptionTranslator;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -93,12 +95,14 @@ public class ReportingControllerSpringTest {
                 = TaskEntry.builder()
                 .store(store)
                 .task(task)
+                .status(TaskEntryStatus.CONFIRMED)
                 .build();
 
         TaskEntry taskEntry2
                 = TaskEntry.builder()
                 .store(store)
                 .task(task)
+                .status(TaskEntryStatus.CONFIRMED)
                 .build();
 
         em.persist(client);
@@ -110,14 +114,16 @@ public class ReportingControllerSpringTest {
         em.flush();
         em.clear();
 
-        restMockMvc.perform(get("/api/reports/tasks/{id}/task", task.getId()))
+        String contentAsString = restMockMvc.perform(get("/api/reports/tasks/{id}/task", task.getId()))
                 .andExpect(status().isOk())
                 .andExpect(header().stringValues(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"Test name Test email 2017-01-01-2017-01-07\""))
                 .andExpect(content().contentType("text/csv; charset=UTF-8"))
                 .andExpect(content().encoding("UTF-8"))
-                .andExpect(content().string("\"#\",URL Магазина,Текст\n" +
-                        "1,sample url\n" +
-                        "2,sample url\n"));
+                .andReturn().getResponse().getContentAsString();
+
+        assertTrue(contentAsString.matches("\"#\",URL Магазина,Текст\n" +
+                "\\d+,sample url\n" +
+                "\\d+,sample url\n"));
     }
 }

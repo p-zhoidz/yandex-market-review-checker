@@ -3,17 +3,15 @@ package by.pzh.yandex.market.review.checker.service.mappers;
 import by.pzh.yandex.market.review.checker.domain.Poster;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.service.dto.TaskDTO;
-import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import java.util.List;
 
 /**
  * Mapper for the entity Task and its DTO TaskDTO.
  */
-@Mapper(componentModel = "spring", uses = {})
+@Mapper(componentModel = "spring", uses = {TaskEntryMapper.class})
 public interface TaskMapper {
 
     /**
@@ -39,7 +37,7 @@ public interface TaskMapper {
      * @param taskDTO entity to be mapped.
      * @return instance of the {@link Task}.
      */
-   // @Named("taskDTOToTask")
+    // @Named("taskDTOToTask")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "poster", source = "posterId")
     Task taskDTOToTask(TaskDTO taskDTO);

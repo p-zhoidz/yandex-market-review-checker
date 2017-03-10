@@ -15,6 +15,15 @@ public class ResponseWrapper {
     /**
      * Parametrized constructor.
      *
+     * @param executionStatus internal representation of the status.
+     */
+    public ResponseWrapper(ExecutionStatus executionStatus) {
+        this(null, executionStatus);
+    }
+
+    /**
+     * Parametrized constructor.
+     *
      * @param response        response body.
      * @param executionStatus internal representation of the status.
      */

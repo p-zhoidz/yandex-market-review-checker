@@ -26,8 +26,6 @@ public class TaskEntryService {
     private TaskEntryMapper taskEntryMapper;
     private TaskEntryRepository taskEntryRepository;
 
-    //private TaskEntryResourceAssembler taskEntryResourceAssembler;
-
     /**
      * Parametrized constructor.
      *

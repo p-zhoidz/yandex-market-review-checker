@@ -1,6 +1,6 @@
 package by.pzh.yandex.market.review.checker.security;
 
-import by.pzh.yandex.market.review.checker.config.ApplicationProperties;
+import by.pzh.yandex.market.review.checker.config.settings.ApplicationProperties;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

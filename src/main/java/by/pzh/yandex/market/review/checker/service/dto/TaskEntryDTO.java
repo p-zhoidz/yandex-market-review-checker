@@ -1,5 +1,6 @@
 package by.pzh.yandex.market.review.checker.service.dto;
 
+import by.pzh.yandex.market.review.checker.domain.enums.TaskEntryStatus;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -14,8 +15,10 @@ public class TaskEntryDTO implements Serializable {
     private Long id;
 
     @NotNull
-    private Long storeId;
+    private StoreDTO store;
 
     @NotNull
     private Long taskId;
+
+    private TaskEntryStatus status;
 }

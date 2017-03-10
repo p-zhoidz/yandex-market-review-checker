@@ -4,6 +4,7 @@ import by.pzh.yandex.market.review.checker.ApplicationTestContext;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.TaskEntry;
+import by.pzh.yandex.market.review.checker.domain.enums.TaskEntryStatus;
 import by.pzh.yandex.market.review.checker.repository.TaskEntryRepository;
 import by.pzh.yandex.market.review.checker.service.dto.TaskEntryDTO;
 import by.pzh.yandex.market.review.checker.service.impl.TaskEntryService;
@@ -93,6 +94,7 @@ public class TaskEntryControllerSpringTest {
         return TaskEntry.builder()
                 .task(task)
                 .store(store)
+                .status(TaskEntryStatus.CONFIRMED)
                 .build();
     }
 
@@ -130,6 +132,7 @@ public class TaskEntryControllerSpringTest {
         existingTaskEntry.setId(1L);
         existingTaskEntry.setTask(taskEntry.getTask());
         existingTaskEntry.setStore(taskEntry.getStore());
+        existingTaskEntry.setStatus(TaskEntryStatus.CONFIRMED);
         TaskEntryDTO existingTaskEntryDTO = taskEntryMapper.taskEntryToTaskEntryDTO(existingTaskEntry);
 
         // An entity with an existing ID cannot be created, so this API call must fail

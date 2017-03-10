@@ -53,4 +53,12 @@ server:
 
 ym:
     constants:
-        baseUrl: http://localhost:3000
+        baseUrl: '*' #http://localhost:3000
+
+wd:
+  driver:
+    driverPath: 'drivers/chromedriver'
+    driverPropertyName: 'webdriver.chrome.driver'
+  review:
+    reviewPostfix: '/reviews?page_num='
+    reviewXPath: 'product-review-item__text'

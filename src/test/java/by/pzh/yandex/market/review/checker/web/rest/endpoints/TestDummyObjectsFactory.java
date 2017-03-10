@@ -2,7 +2,6 @@ package by.pzh.yandex.market.review.checker.web.rest.endpoints;
 
 import by.pzh.yandex.market.review.checker.domain.Client;
 import by.pzh.yandex.market.review.checker.domain.Poster;
-import by.pzh.yandex.market.review.checker.domain.Report;
 import by.pzh.yandex.market.review.checker.domain.Store;
 import by.pzh.yandex.market.review.checker.domain.Task;
 import by.pzh.yandex.market.review.checker.domain.enums.TaskStatus;
@@ -27,12 +26,6 @@ public final class TestDummyObjectsFactory {
                 .build();
     }
 
-    public static Report getReport() {
-        return Report.builder()
-                .date(LocalDate.now())
-                .task(getTask())
-                .build();
-    }
 
     public static Client getCustomer() {
         return Client.builder()
